@@ -276,17 +276,37 @@ const COMPANIES=[
 ];
 let currentFeature='welcome',companyFilter='All',interviewState=null,testState=null,chatHistory=[];
 
-function getUser(){try{return JSON.parse(localStorage.getItem('placementor_user')||'null')}catch(e){return null}}
-function saveUser(u){localStorage.setItem('placementor_user',JSON.stringify(u))}
-function getApiKey(){return localStorage.getItem('placementor_api_key')||''}
-function saveApiKey(k){localStorage.setItem('placementor_api_key',k)}
+const tempStorage = {};
+function safeGetItem(key) {
+  try { return localStorage.getItem(key); }
+  catch(e) { return tempStorage[key] || null; }
+}
+function safeSetItem(key, val) {
+  try { localStorage.setItem(key, val); }
+  catch(e) { tempStorage[key] = val; }
+}
+
+const tempSession = {};
+function safeSessionGet(key) {
+  try { return sessionStorage.getItem(key); }
+  catch(e) { return tempSession[key] || null; }
+}
+function safeSessionSet(key, val) {
+  try { sessionStorage.setItem(key, val); }
+  catch(e) { tempSession[key] = val; }
+}
+
+function getUser(){try{return JSON.parse(safeGetItem('placementor_user')||'null')}catch(e){return null}}
+function saveUser(u){safeSetItem('placementor_user',JSON.stringify(u))}
+function getApiKey(){return safeGetItem('placementor_api_key')||''}
+function saveApiKey(k){safeSetItem('placementor_api_key',k)}
 function isDemoMode(){return !getApiKey()}
-function setDemoMode(v){localStorage.setItem('placementor_demo',v?'true':'false')}
+function setDemoMode(v){safeSetItem('placementor_demo',v?'true':'false')}
 function showApiKeyModal(){document.getElementById('apiKeyModal').classList.remove('hidden');document.getElementById('modalApiKey').value=''}
 function hideApiKeyModal(){document.getElementById('apiKeyModal').classList.add('hidden')}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function getUsedFeatures(){try{return JSON.parse(localStorage.getItem('placementor_used')||'[]')}catch(e){return[]}}
-function markFeatureUsed(id){const u=getUsedFeatures();if(!u.includes(id)){u.push(id);localStorage.setItem('placementor_used',JSON.stringify(u));updateProgress()}}
+function getUsedFeatures(){try{return JSON.parse(safeGetItem('placementor_used')||'[]')}catch(e){return[]}}
+function markFeatureUsed(id){const u=getUsedFeatures();if(!u.includes(id)){u.push(id);safeSetItem('placementor_used',JSON.stringify(u));updateProgress()}}
 function updateProgress(){const n=getUsedFeatures().length;document.getElementById('progressText').textContent=n+'/10 features used';document.getElementById('progressFill').style.width=(n/10*100)+'%'}
 function getInitials(n){return(n||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
 function toast(msg,type='info'){const c=document.getElementById('toastContainer'),t=document.createElement('div');t.className='toast toast-'+type;t.textContent=msg;c.appendChild(t);setTimeout(()=>t.remove(),3500)}
@@ -990,17 +1010,17 @@ function openApiKeyModal(){showApiKeyModal()}
 function setupApiKeyHandlers(){
   document.getElementById('saveApiKeyBtn').onclick=()=>{
     const key=document.getElementById('modalApiKey').value.trim();
-    if(!key||!key.startsWith('sk-')){toast('Enter valid API key (sk-ant-...)','error');return}
-    saveApiKey(key);sessionStorage.setItem('api_modal_seen','1');hideApiKeyModal();
+    if(!key){toast('Please enter a valid API key','error');return}
+    saveApiKey(key);safeSessionSet('api_modal_seen','1');hideApiKeyModal();
     toast('API key saved! AI mode enabled.','success');
   };
-  document.getElementById('skipApiKeyBtn').onclick=()=>{sessionStorage.setItem('api_modal_seen','1');hideApiKeyModal();toast('Demo mode — all features work with smart local analysis','success')};
+  document.getElementById('skipApiKeyBtn').onclick=()=>{safeSessionSet('api_modal_seen','1');hideApiKeyModal();toast('Demo mode — all features work with smart local analysis','success')};
 }
 function sectorClass(s){return{'IT':'badge-it','Core':'badge-core','Finance':'badge-finance','Consulting':'badge-consulting'}[s]||'badge-it'}
 function navigate(id,company){currentFeature=id;document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.id===id));const mc=document.getElementById('mainContent');mc.classList.add('fade');setTimeout(()=>{renderFeature(id,company);mc.classList.remove('fade')},150)}
 function renderNav(){document.getElementById('navMenu').innerHTML=FEATURES.map(f=>`<button class="nav-item${currentFeature===f.id?' active':''}" data-id="${f.id}"><span class="icon">${f.icon}</span><span>${f.name}</span></button>`).join('');document.querySelectorAll('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.id))}
 function renderCompanies(){const filters=['All','IT','Core','Finance','Consulting'];document.getElementById('filterBtns').innerHTML=filters.map(f=>`<button class="filter-btn${companyFilter===f?' active':''}" data-f="${f}">${f}</button>`).join('');document.querySelectorAll('.filter-btn').forEach(b=>b.onclick=()=>{companyFilter=b.dataset.f;renderCompanies()});const list=companyFilter==='All'?COMPANIES:COMPANIES.filter(c=>c.sector===companyFilter);document.getElementById('companyList').innerHTML=list.map(c=>`<div class="company-card" data-co="${c.name}"><div class="company-logo" style="background:${c.color}">${c.name[0]}</div><div class="company-info"><div class="company-name">${c.name}</div><div class="company-meta"><span class="badge ${sectorClass(c.sector)}">${c.sector}</span><span class="badge badge-openings">${c.openings} openings</span></div><div style="font-size:.7rem;color:var(--muted);margin-top:2px">${c.pkg} avg</div></div></div>`).join('');document.querySelectorAll('.company-card').forEach(card=>card.onclick=()=>{navigate('company',card.dataset.co);toast('Loading insights for '+card.dataset.co,'info')})}
-function initDashboard(){const u=getUser();if(u?.apiKey&&!getApiKey()){saveApiKey(u.apiKey);delete u.apiKey;saveUser(u)}document.getElementById('userAvatar').textContent=getInitials(u.fullName);document.getElementById('userName').textContent=u.fullName;document.getElementById('userBranch').textContent=u.branch;renderNav();renderCompanies();updateProgress();setupApiKeyHandlers();navigate('welcome');document.getElementById('themeToggle').onclick=()=>{const h=document.documentElement,t=h.dataset.theme==='dark'?'light':'dark';h.dataset.theme=t;localStorage.setItem('placementor_theme',t)};document.getElementById('apiKeyBtn').onclick=openApiKeyModal;if(!getApiKey()&&!sessionStorage.getItem('api_modal_seen'))showApiKeyModal()}
+function initDashboard(){const u=getUser();if(u?.apiKey&&!getApiKey()){saveApiKey(u.apiKey);delete u.apiKey;saveUser(u)}document.getElementById('userAvatar').textContent=getInitials(u.fullName);document.getElementById('userName').textContent=u.fullName;document.getElementById('userBranch').textContent=u.branch;renderNav();renderCompanies();updateProgress();setupApiKeyHandlers();navigate('welcome');document.getElementById('themeToggle').onclick=()=>{const h=document.documentElement,t=h.dataset.theme==='dark'?'light':'dark';h.dataset.theme=t;safeSetItem('placementor_theme',t)};document.getElementById('apiKeyBtn').onclick=openApiKeyModal;if(!getApiKey()&&!safeSessionGet('api_modal_seen'))showApiKeyModal()}
 function renderFeature(id,company){const u=getUser(),mc=document.getElementById('mainContent');const handlers={welcome:renderWelcome,resume:renderResume,prediction:renderPrediction,interview:renderInterview,skillgap:renderSkillGap,roadmap:renderRoadmap,tests:renderTests,jobs:renderJobs,company:()=>renderCompany(company),progress:renderProgress,mentor:renderMentor};(handlers[id]||renderWelcome)()}
 function renderWelcome(){const u=getUser(),used=getUsedFeatures().length,demo=isDemoMode();document.getElementById('mainContent').innerHTML=`<div class="card"><div class="card-title">👋 Welcome, ${esc(u.fullName)}! ${demo?'<span class="demo-badge">Demo Mode</span>':''}</div><p class="card-desc">${esc(u.collegeName)} · ${esc(u.branch)} · ${esc(u.classYear)}</p>${demo?'<div style="background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);border-radius:.5rem;padding:.75rem 1rem;margin-bottom:1rem;font-size:.85rem">💡 Running in <strong>Demo Mode</strong> with smart local analysis. Click <strong>🔑 API Key Settings</strong> for real AI.</div>':''}<div class="welcome-grid"><div class="stat-card"><div class="stat-value">${used}</div><div class="stat-label">Features Used</div></div><div class="stat-card"><div class="stat-value">${10-used}</div><div class="stat-label">Remaining</div></div><div class="stat-card"><div class="stat-value">25</div><div class="stat-label">Top Companies</div></div><div class="stat-card"><div class="stat-value">${demo?'Demo':'AI'}</div><div class="stat-label">Mode</div></div></div><p style="margin-top:1.5rem;color:var(--muted);font-size:.85rem">Select a feature from the sidebar to get started. Click any company on the right for instant insights.</p></div>`}
 
@@ -1395,7 +1415,7 @@ function renderMentor(){
 }
 
 document.getElementById('login-form').onsubmit=e=>{e.preventDefault();const u={fullName:document.getElementById('fullName').value.trim(),classYear:document.getElementById('classYear').value.trim(),collegeName:document.getElementById('collegeName').value.trim(),branch:document.getElementById('branch').value,email:document.getElementById('email').value.trim()};if(!u.fullName||!u.branch){toast('Please fill all required fields','error');return}saveUser(u);document.getElementById('login-page').style.display='none';document.getElementById('dashboard').style.display='grid';initDashboard();toast('Welcome to Placementor AI!','success')};
-const savedTheme=localStorage.getItem('placementor_theme');if(savedTheme)document.documentElement.dataset.theme=savedTheme;
+const savedTheme=safeGetItem('placementor_theme');if(savedTheme)document.documentElement.dataset.theme=savedTheme;
 const u=getUser();if(u){document.getElementById('fullName').value=u.fullName||'';document.getElementById('classYear').value=u.classYear||'';document.getElementById('collegeName').value=u.collegeName||'';document.getElementById('branch').value=u.branch||'';document.getElementById('email').value=u.email||''}
 </script>
 </body>
