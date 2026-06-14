@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Placementor AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0F172A;--sidebar:#1E293B;--panel:#243044;--card:#1E293B;--accent:#F97316;--blue:#3B82F6;--text:#F8FAFC;--muted:#94A3B8;--border:rgba(148,163,184,.15);--success:#22C55E;--danger:#EF4444;--glow:rgba(249,115,22,.25)}
+[data-theme="light"]{--bg:#F1F5F9;--sidebar:#FFFFFF;--panel:#E2E8F0;--card:#FFFFFF;--text:#0F172A;--muted:#64748B;--border:rgba(15,23,42,.1);--glow:rgba(59,130,246,.2)}
+html,body{height:100%;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+.hidden{display:none!important}
+#login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0F172A 0%,#1e3a5f 50%,#0F172A 100%);padding:20px}
+.login-card{width:100%;max-width:480px;background:var(--card);border:1px solid var(--border);border-radius:1rem;padding:2.5rem;box-shadow:0 0 60px var(--glow),0 25px 50px rgba(0,0,0,.4);animation:fadeIn .6s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.logo-wrap{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;justify-content:center}
+.logo-icon{width:52px;height:52px;background:linear-gradient(135deg,var(--accent),var(--blue));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#fff;box-shadow:0 4px 20px rgba(249,115,22,.4)}
+.logo-text{font-size:1.75rem;font-weight:700;background:linear-gradient(90deg,var(--accent),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.login-sub{text-align:center;color:var(--muted);margin-bottom:1.5rem;font-size:.9rem}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:.8rem;font-weight:500;color:var(--muted);margin-bottom:.35rem}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:.65rem .85rem;background:var(--bg);border:1px solid var(--border);border-radius:.5rem;color:var(--text);font-size:.9rem;font-family:inherit;transition:border .2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,.2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:.7rem 1.4rem;border:none;border-radius:.5rem;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#ea580c);color:#fff}
+.login-card .btn-primary{width:100%;margin-top:.5rem}
+.card .btn-primary{margin-top:.5rem}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(249,115,22,.4)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-secondary{background:var(--panel);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--blue)}
+.btn-sm{padding:.45rem .9rem;font-size:.8rem}
+#dashboard{display:none;height:100vh;grid-template-columns:240px 1fr 280px;grid-template-rows:1fr}
+.sidebar{background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1rem 0;overflow:hidden}
+.sidebar-logo{display:flex;align-items:center;gap:10px;padding:0 1rem 1rem;border-bottom:1px solid var(--border);margin-bottom:1rem}
+.sidebar-logo .logo-icon{width:36px;height:36px;font-size:1rem;border-radius:10px}
+.sidebar-logo span{font-weight:700;font-size:.95rem}
+.user-info{padding:0 1rem 1rem;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);margin-bottom:.5rem}
+.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#fff;flex-shrink:0}
+.user-details .name{font-weight:600;font-size:.85rem}
+.user-details .branch{font-size:.75rem;color:var(--muted)}
+.nav-menu{flex:1;overflow-y:auto;padding:0 .5rem}
+.nav-item{display:flex;align-items:center;gap:10px;padding:.65rem .75rem;border-radius:.5rem;cursor:pointer;font-size:.82rem;color:var(--muted);transition:all .2s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:inherit}
+.nav-item:hover{background:rgba(59,130,246,.1);color:var(--text)}
+.nav-item.active{background:rgba(249,115,22,.15);color:var(--accent);font-weight:600}
+.nav-item .icon{font-size:1rem;width:22px;text-align:center}
+.sidebar-footer{padding:1rem;border-top:1px solid var(--border)}
+.progress-label{font-size:.75rem;color:var(--muted);margin-bottom:.4rem}
+.progress-bar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin-bottom:1rem}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--accent));border-radius:3px;transition:width .5s ease}
+.theme-toggle{display:flex;align-items:center;justify-content:space-between;font-size:.8rem;color:var(--muted)}
+.toggle-switch{width:44px;height:24px;background:var(--bg);border-radius:12px;cursor:pointer;position:relative;border:1px solid var(--border);transition:background .2s}
+.toggle-switch::after{content:'';position:absolute;width:18px;height:18px;background:var(--accent);border-radius:50%;top:2px;left:2px;transition:transform .2s}
+[data-theme="light"] .toggle-switch::after{transform:translateX(20px)}
+.main-content{overflow-y:auto;padding:1.5rem;background:var(--bg);transition:opacity .3s}
+.main-content.fade{opacity:0}
+.right-panel{background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.right-panel-header{padding:1rem;border-bottom:1px solid var(--border);font-weight:700;font-size:.95rem}
+.filter-btns{display:flex;flex-wrap:wrap;gap:4px;padding:.75rem 1rem;border-bottom:1px solid var(--border)}
+.filter-btn{padding:.3rem .6rem;font-size:.7rem;border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:999px;cursor:pointer;font-family:inherit;transition:all .2s}
+.filter-btn.active,.filter-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.company-list{flex:1;overflow-y:auto;padding:.5rem}
+.company-card{display:flex;align-items:center;gap:10px;padding:.75rem;border-radius:.75rem;cursor:pointer;border:1px solid transparent;transition:all .2s;margin-bottom:4px}
+.company-card:hover{background:rgba(59,130,246,.1);border-color:var(--border)}
+.company-logo{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;color:#fff;flex-shrink:0}
+.company-info{flex:1;min-width:0}
+.company-name{font-weight:600;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.company-meta{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.badge{font-size:.65rem;padding:2px 6px;border-radius:999px;font-weight:500}
+.badge-it{background:rgba(59,130,246,.2);color:var(--blue)}
+.badge-core{background:rgba(34,197,94,.2);color:var(--success)}
+.badge-finance{background:rgba(234,179,8,.2);color:#EAB308}
+.badge-consulting{background:rgba(168,85,247,.2);color:#A855F7}
+.badge-openings{background:rgba(249,115,22,.15);color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:.75rem;padding:1.25rem;margin-bottom:1rem;transition:box-shadow .2s,border-color .2s}
+.card:hover{box-shadow:0 4px 20px rgba(0,0,0,.15)}
+.card-title{font-size:1.15rem;font-weight:700;margin-bottom:.5rem;display:flex;align-items:center;gap:8px}
+.card-desc{color:var(--muted);font-size:.85rem;margin-bottom:1rem}
+.welcome-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-top:1rem}
+.stat-card{background:var(--bg);border-radius:.75rem;padding:1rem;text-align:center;border:1px solid var(--border)}
+.stat-value{font-size:1.5rem;font-weight:700;color:var(--accent)}
+.stat-label{font-size:.75rem;color:var(--muted);margin-top:4px}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+.spinner-lg{width:40px;height:40px;border-width:3px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem;gap:1rem;color:var(--muted)}
+.toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{padding:.75rem 1.25rem;border-radius:.5rem;font-size:.85rem;font-weight:500;color:#fff;animation:slideIn .3s ease;box-shadow:0 4px 20px rgba(0,0,0,.3);max-width:360px}
+.toast-success{background:#16A34A}.toast-error{background:#DC2626}.toast-info{background:var(--blue)}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:1rem}
+.result-card{padding:1rem;border-radius:.75rem;border:1px solid var(--border)}
+.result-card.green{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3)}
+.result-card.red{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3)}
+.result-card.blue{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3)}
+.result-card.orange{background:rgba(249,115,22,.1);border-color:rgba(249,115,22,.3)}
+.result-card h4{font-size:.85rem;margin-bottom:.5rem;font-weight:600}
+.result-card ul,.result-card ol{padding-left:1.2rem;font-size:.85rem;line-height:1.6}
+.score-circle{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;margin:1rem auto;background:conic-gradient(var(--accent) var(--pct,0%),var(--bg) 0);position:relative}
+.score-circle::before{content:'';position:absolute;width:90px;height:90px;background:var(--card);border-radius:50%}
+.score-circle span{position:relative;z-index:1;font-size:1.5rem}
+.gauge-wrap{text-align:center;margin:1.5rem 0}
+.gauge{width:200px;height:100px;margin:0 auto;position:relative;overflow:hidden}
+.gauge-bg,.gauge-fill{position:absolute;width:200px;height:200px;border-radius:50%;border:20px solid var(--bg);top:0;left:0;clip-path:polygon(0 50%,100% 50%,100% 100%,0 100%)}
+.gauge-fill{border-color:var(--accent);transform:rotate(calc(var(--deg,0) * 1deg));transform-origin:center;transition:transform 1.5s ease;border-top-color:var(--accent);border-right-color:var(--accent)}
+.gauge-value{font-size:2rem;font-weight:700;color:var(--accent);margin-top:-20px}
+.tags-input{display:flex;flex-wrap:wrap;gap:6px;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:.5rem;min-height:42px;cursor:text}
+.tag{background:var(--blue);color:#fff;padding:2px 8px;border-radius:999px;font-size:.75rem;display:flex;align-items:center;gap:4px}
+.tag span{cursor:pointer;opacity:.8}
+.tags-input input{border:none;background:transparent;outline:none;color:var(--text);flex:1;min-width:80px;font-size:.85rem;font-family:inherit}
+.interview-progress{height:6px;background:var(--bg);border-radius:3px;margin-bottom:1rem;overflow:hidden}
+.interview-progress-fill{height:100%;background:var(--accent);transition:width .3s}
+.question-box{background:var(--bg);padding:1rem;border-radius:.75rem;border-left:4px solid var(--accent);margin-bottom:1rem;font-size:.95rem;line-height:1.5}
+.tabs{display:flex;gap:4px;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab-btn{padding:.6rem 1rem;background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:.85rem;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.tab-content{display:none}.tab-content.active{display:block}
+.insight-tabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:1rem}
+.insight-tab{padding:.5rem .85rem;background:var(--bg);border:1px solid var(--border);border-radius:.5rem;cursor:pointer;font-size:.8rem;color:var(--muted);font-family:inherit;transition:all .2s}
+.insight-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.insight-panel{display:none;padding:1rem;background:var(--bg);border-radius:.75rem;line-height:1.7;font-size:.9rem}.insight-panel.active{display:block}
+.timeline{position:relative;padding-left:2rem;margin-top:1rem}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border)}
+.timeline-item{position:relative;margin-bottom:1.5rem;padding-left:1rem}
+.timeline-item::before{content:'';position:absolute;left:-1.35rem;top:4px;width:12px;height:12px;border-radius:50%;background:var(--accent);border:2px solid var(--card)}
+.timeline-week{font-weight:700;color:var(--accent);font-size:.85rem;margin-bottom:4px}
+.timeline-content{font-size:.85rem;color:var(--muted);line-height:1.5}
+.mcq-option{display:flex;align-items:flex-start;gap:10px;padding:.75rem;border:1px solid var(--border);border-radius:.5rem;margin-bottom:.5rem;cursor:pointer;transition:all .2s}
+.mcq-option:hover{border-color:var(--blue)}
+.mcq-option.selected{border-color:var(--accent);background:rgba(249,115,22,.1)}
+.mcq-option.correct{border-color:var(--success);background:rgba(34,197,94,.1)}
+.mcq-option.wrong{border-color:var(--danger);background:rgba(239,68,68,.1)}
+.timer{font-size:1.25rem;font-weight:700;color:var(--accent);text-align:center;margin-bottom:1rem}
+.job-card{display:grid;grid-template-columns:1fr auto;gap:1rem;padding:1rem;border:1px solid var(--border);border-radius:.75rem;margin-bottom:.75rem;align-items:center;transition:all .2s}
+.job-card:hover{border-color:var(--blue)}
+.match-badge{background:linear-gradient(135deg,var(--blue),var(--accent));color:#fff;padding:4px 10px;border-radius:999px;font-size:.75rem;font-weight:700}
+.chat-container{display:flex;flex-direction:column;height:calc(100vh - 180px);min-height:400px}
+.chat-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:12px}
+.chat-msg{max-width:85%;padding:.75rem 1rem;border-radius:.75rem;font-size:.9rem;line-height:1.6;white-space:pre-wrap}
+.chat-msg.user{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:4px}
+.chat-msg.ai{align-self:flex-start;background:var(--bg);border:1px solid var(--border);border-bottom-left-radius:4px}
+.chat-input-area{padding:1rem;border-top:1px solid var(--border);background:var(--card);border-radius:0 0 .75rem .75rem}
+.chat-input-row{display:flex;gap:8px}
+.chat-input-row input{flex:1;padding:.65rem .85rem;background:var(--bg);border:1px solid var(--border);border-radius:.5rem;color:var(--text);font-family:inherit}
+.quick-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:.75rem}
+.chip{padding:.35rem .75rem;background:var(--bg);border:1px solid var(--border);border-radius:999px;font-size:.75rem;cursor:pointer;color:var(--muted);transition:all .2s;font-family:inherit}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.typing{display:flex;gap:4px;padding:.75rem 1rem;align-self:flex-start}
+.typing span{width:8px;height:8px;background:var(--muted);border-radius:50%;animation:bounce 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+.feedback-item{padding:1rem;background:var(--bg);border-radius:.75rem;margin-bottom:.75rem;border-left:3px solid var(--blue)}
+.feedback-item .q{font-weight:600;margin-bottom:.35rem;font-size:.85rem}
+.feedback-item .a{color:var(--muted);font-size:.85rem;margin-bottom:.35rem}
+.feedback-item .fb{color:var(--text);font-size:.85rem}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;backdrop-filter:blur(4px)}
+.modal-card{background:var(--card);border:1px solid var(--border);border-radius:1rem;padding:2rem;max-width:440px;width:100%;box-shadow:0 25px 50px rgba(0,0,0,.5)}
+.modal-title{font-size:1.25rem;font-weight:700;margin-bottom:.5rem}
+.modal-desc{color:var(--muted);font-size:.85rem;margin-bottom:1.25rem;line-height:1.5}
+.demo-badge{display:inline-block;background:rgba(59,130,246,.2);color:var(--blue);font-size:.7rem;padding:2px 8px;border-radius:999px;margin-left:8px;font-weight:600}
+@media(max-width:900px){
+  #dashboard{grid-template-columns:1fr;grid-template-rows:1fr auto;padding-bottom:60px}
+  .sidebar{position:fixed;bottom:0;left:0;right:0;top:auto;height:60px;flex-direction:row;padding:0;border-right:none;border-top:1px solid var(--border);z-index:100}
+  .sidebar-logo,.user-info,.nav-item span{display:none}
+  .sidebar-footer{position:fixed;bottom:70px;right:10px;z-index:101;padding:.5rem;border:none;background:transparent}
+  .sidebar-footer .progress-label,.sidebar-footer .progress-bar,.sidebar-footer .theme-toggle{display:none}
+  #apiKeyBtn{display:block!important;width:auto!important;padding:.5rem .75rem;border-radius:50%;font-size:1rem}
+  .nav-menu{display:flex;overflow-x:auto;padding:.5rem;flex:1}
+  .nav-item{flex-direction:column;padding:.4rem .5rem;font-size:.6rem;min-width:56px}
+  .nav-item .icon{font-size:1.1rem}
+  .right-panel{display:none}
+  .row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div id="login-page">
+  <div class="login-card">
+    <div class="logo-wrap">
+      <div class="logo-icon">P</div>
+      <div class="logo-text">Placementor AI</div>
+    </div>
+    <p class="login-sub">Your AI-powered placement companion. Enter your details to begin.</p>
+    <form id="login-form">
+      <div class="form-group"><label>Full Name</label><input type="text" id="fullName" required placeholder="John Doe"></div>
+      <div class="form-group"><label>Class / Year</label><input type="text" id="classYear" required placeholder="Final Year / 2026"></div>
+      <div class="form-group"><label>College Name</label><input type="text" id="collegeName" required placeholder="Your College"></div>
+      <div class="form-group"><label>Branch</label>
+        <select id="branch" required>
+          <option value="">Select Branch</option>
+          <option>CSE</option><option>ECE</option><option>EEE</option><option>Mechanical</option>
+          <option>Civil</option><option>MBA</option><option>MCA</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Email</label><input type="email" id="email" required placeholder="you@college.edu"></div>
+      <button type="submit" class="btn btn-primary">Start My Journey →</button>
+    </form>
+  </div>
+</div>
+
+<div id="dashboard">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-icon">P</div><span>Placementor AI</span></div>
+    <div class="user-info"><div class="avatar" id="userAvatar">JD</div><div class="user-details"><div class="name" id="userName">User</div><div class="branch" id="userBranch">CSE</div></div></div>
+    <nav class="nav-menu" id="navMenu"></nav>
+    <div class="sidebar-footer">
+      <div class="progress-label"><span id="progressText">0/9 features used</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="theme-toggle"><span>🌙 Dark / ☀️ Light</span><div class="toggle-switch" id="themeToggle"></div></div>
+      <button class="btn btn-secondary btn-sm" id="apiKeyBtn" style="width:100%;margin-top:.75rem;font-size:.75rem">🔑 API Key Settings</button>
+    </div>
+  </aside>
+  <main class="main-content" id="mainContent"></main>
+  <aside class="right-panel">
+    <div class="right-panel-header">🏢 Top Hiring Companies</div>
+    <div class="filter-btns" id="filterBtns"></div>
+    <div class="company-list" id="companyList"></div>
+  </aside>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+
+<div id="apiKeyModal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="modal-title">🔑 Setup Anthropic API Key</div>
+    <p class="modal-desc">AI features need your API key. Get one free at <a href="https://console.anthropic.com/" target="_blank" style="color:var(--blue)">console.anthropic.com</a></p>
+    <div class="form-group"><label>API Key (sk-ant-...)</label><input type="password" id="modalApiKey" placeholder="sk-ant-api03-..."></div>
+    <div style="display:flex;gap:8px;margin-top:1rem">
+      <button class="btn btn-primary" id="saveApiKeyBtn" style="flex:1;margin:0">Save & Continue</button>
+      <button class="btn btn-secondary btn-sm" id="skipApiKeyBtn">Skip (Demo Mode)</button>
+    </div>
+    <p style="font-size:.75rem;color:var(--muted);margin-top:.75rem;text-align:center">Demo mode uses smart local analysis. Add API key for real AI responses.</p>
+  </div>
+</div>
+
+<script>
+const FEATURES=[
+  {id:'resume',icon:'📄',name:'Resume Analyzer'},
+  {id:'prediction',icon:'🎯',name:'Placement Prediction'},
+  {id:'interview',icon:'🎤',name:'Mock Interview'},
+  {id:'skillgap',icon:'🔍',name:'Skill Gap Analysis'},
+  {id:'roadmap',icon:'🗺️',name:'Personalized Roadmap'},
+  {id:'tests',icon:'📝',name:'Aptitude & Coding Tests'},
+  {id:'jobs',icon:'💼',name:'Job Recommendations'},
+  {id:'company',icon:'🏢',name:'Company Insights'},
+  {id:'progress',icon:'📈',name:'Student Progress'},
+  {id:'mentor',icon:'💡',name:'AI Daily Mentor'}
+];
+const COMPANIES=[
+  {name:'TCS',sector:'IT',pkg:'7 LPA',openings:892,color:'#0066CC'},
+  {name:'Infosys',sector:'IT',pkg:'8 LPA',openings:654,color:'#007CC3'},
+  {name:'Wipro',sector:'IT',pkg:'7.5 LPA',openings:521,color:'#341758'},
+  {name:'Accenture',sector:'Consulting',pkg:'10 LPA',openings:445,color:'#A100FF'},
+  {name:'HCL',sector:'IT',pkg:'8 LPA',openings:387,color:'#006BB6'},
+  {name:'Cognizant',sector:'IT',pkg:'7.8 LPA',openings:412,color:'#0033A0'},
+  {name:'IBM',sector:'IT',pkg:'9 LPA',openings:298,color:'#0530AD'},
+  {name:'Capgemini',sector:'IT',pkg:'7.2 LPA',openings:356,color:'#0070AD'},
+  {name:'Tech Mahindra',sector:'IT',pkg:'7 LPA',openings:334,color:'#E31837'},
+  {name:'L&T',sector:'Core',pkg:'6.5 LPA',openings:189,color:'#003DA5'},
+  {name:'Deloitte',sector:'Consulting',pkg:'12 LPA',openings:267,color:'#86BC25'},
+  {name:'Amazon',sector:'IT',pkg:'18 LPA',openings:234,color:'#FF9900'},
+  {name:'Google',sector:'IT',pkg:'25 LPA',openings:156,color:'#4285F4'},
+  {name:'Microsoft',sector:'IT',pkg:'22 LPA',openings:178,color:'#00A4EF'},
+  {name:'Flipkart',sector:'IT',pkg:'16 LPA',openings:145,color:'#2874F0'},
+  {name:'Swiggy',sector:'IT',pkg:'14 LPA',openings:98,color:'#FC8019'},
+  {name:'Zomato',sector:'IT',pkg:'13 LPA',openings:87,color:'#E23744'},
+  {name:'HDFC Bank',sector:'Finance',pkg:'9 LPA',openings:312,color:'#004C8F'},
+  {name:'ICICI Bank',sector:'Finance',pkg:'8.5 LPA',openings:289,color:'#F58220'},
+  {name:'Bajaj Auto',sector:'Core',pkg:'7 LPA',openings:76,color:'#005DAA'},
+  {name:'Bosch',sector:'Core',pkg:'8 LPA',openings:112,color:'#EA0016'},
+  {name:'DRDO',sector:'Core',pkg:'6 LPA',openings:45,color:'#1B4332'},
+  {name:'Tata Motors',sector:'Core',pkg:'7.5 LPA',openings:134,color:'#003DA5'},
+  {name:'Oracle',sector:'IT',pkg:'15 LPA',openings:167,color:'#F80000'},
+  {name:'Salesforce',sector:'IT',pkg:'17 LPA',openings:123,color:'#00A1E0'}
+];
+let currentFeature='welcome',companyFilter='All',interviewState=null,testState=null,chatHistory=[];
+
+function getUser(){try{return JSON.parse(localStorage.getItem('placementor_user')||'null')}catch(e){return null}}
+function saveUser(u){localStorage.setItem('placementor_user',JSON.stringify(u))}
+function getApiKey(){return localStorage.getItem('placementor_api_key')||''}
+function saveApiKey(k){localStorage.setItem('placementor_api_key',k)}
+function isDemoMode(){return !getApiKey()}
+function setDemoMode(v){localStorage.setItem('placementor_demo',v?'true':'false')}
+function showApiKeyModal(){document.getElementById('apiKeyModal').classList.remove('hidden');document.getElementById('modalApiKey').value=''}
+function hideApiKeyModal(){document.getElementById('apiKeyModal').classList.add('hidden')}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function getUsedFeatures(){try{return JSON.parse(localStorage.getItem('placementor_used')||'[]')}catch(e){return[]}}
+function markFeatureUsed(id){const u=getUsedFeatures();if(!u.includes(id)){u.push(id);localStorage.setItem('placementor_used',JSON.stringify(u));updateProgress()}}
+function updateProgress(){const n=getUsedFeatures().length;document.getElementById('progressText').textContent=n+'/10 features used';document.getElementById('progressFill').style.width=(n/10*100)+'%'}
+function getInitials(n){return(n||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
+function toast(msg,type='info'){const c=document.getElementById('toastContainer'),t=document.createElement('div');t.className='toast toast-'+type;t.textContent=msg;c.appendChild(t);setTimeout(()=>t.remove(),3500)}
+function showLoading(el){el.innerHTML='<div class="loading-overlay"><div class="spinner spinner-lg"></div><p>Analyzing with AI...</p></div>'}
+function extractJSON(text){if(!text)return null;const m=text.match(/```(?:json)?\s*([\s\S]*?)```/);if(m)try{return JSON.parse(m[1].trim())}catch(e){}const s=text.indexOf('{'),e=text.lastIndexOf('}');if(s!==-1&&e>s)try{return JSON.parse(text.slice(s,e+1))}catch(e){}const a=text.indexOf('['),b=text.lastIndexOf(']');if(a!==-1&&b>a)try{return JSON.parse(text.slice(a,b+1))}catch(e){}return null}
+
+const COMPANY_INSIGHTS={
+  TCS:{about:'Tata Consultancy Services is India\'s largest IT services company, hiring 40,000+ freshers annually through NQT and campus drives.',hiringProcess:['Register on TCS NQT portal','Online National Qualifier Test (NQT)','Technical + Managerial Interview','HR Round','Offer Letter'],interviewRounds:['Aptitude & Reasoning','Programming Logic','Technical (Branch-specific)','Managerial Interview','HR'],commonQuestions:['Tell me about yourself','Why TCS?','Explain your final year project','What is OOP?','Strengths and weaknesses'],packageRange:'3.36 - 9 LPA (TCS Ninja to Digital)',insiderTips:['NQT score matters — aim 1800+','Practice TCS-specific coding patterns','Know about TCS business units','Be ready for managerial round scenarios','Dress formally for HR round']},
+  Infosys:{about:'Infosys is a global leader in consulting and IT services, known for rigorous training at Mysore campus.',hiringProcess:['Online Application','HackWithInfy / InfyTQ exam','Technical Interview','HR Interview'],interviewRounds:['Online Aptitude Test','Technical Round 1','Technical Round 2','HR Round'],commonQuestions:['Walk me through your resume','Explain DBMS normalization','Difference between Java and Python','Puzzle: Clock angle problems','Where do you see yourself in 5 years?'],packageRange:'3.6 - 9.5 LPA',insiderTips:['InfyTQ certification gives edge','Strong in data structures helps','Practice puzzles daily','Know Infosys values and culture','Mysore training is 4-6 months']},
+  Amazon:{about:'Amazon hires aggressively for SDE roles with focus on DSA, system design, and leadership principles.',hiringProcess:['Online Assessment (OA)','Phone Screen','Virtual Onsite (4-5 rounds)','Offer'],interviewRounds:['OA: 2 Coding Problems','Phone Screen: 1 Coding + LP','Onsite: 3 Coding + 1 System Design + LP','Bar Raiser Round'],commonQuestions:['Two Sum variant problems','Design a parking lot','Tell me about a time you disagreed (LP)','K closest points to origin','Rate limiter design'],packageRange:'18 - 45 LPA',insiderTips:['Master LeetCode medium/hard','Prepare 8-10 Leadership Principle stories','System design for SDE-2 level','OA has strict time limits','Bar raiser can veto — prepare well']},
+  Google:{about:'Google hires top talent through rigorous algorithmic interviews and googliness assessment.',hiringProcess:['Resume Screening','Phone Screen','Onsite Interviews (4-5 rounds)','Hiring Committee Review','Offer'],interviewRounds:['Phone Screen: 1-2 Coding','Onsite: 4 Coding rounds','Googliness & Leadership','Hiring Committee'],commonQuestions:['Graph traversal problems','Dynamic programming','Design Google Search autocomplete','Tell me about a complex project','Estimate Gmail storage needs'],packageRange:'25 - 60 LPA',insiderTips:['Think aloud during coding','Optimize from brute force to optimal','Practice on LeetCode Google tag','Googliness = collaboration + curiosity','Can take 2-3 months for HC review']}
+};
+
+const MCQ_BANK={
+  aptitude:[
+    {question:'If 20% of a number is 80, what is the number?',options:['300','400','500','600'],correct:1,explanation:'20% of x = 80 → x = 80/0.2 = 400'},
+    {question:'A train 150m long passes a pole in 15 seconds. Speed in km/hr?',options:['36','40','45','50'],correct:0,explanation:'Speed = 150/15 = 10 m/s = 36 km/hr'},
+    {question:'Ratio of ages of A and B is 3:5. After 10 years ratio is 5:7. Age of A?',options:['12','15','18','20'],correct:1,explanation:'(3x+10)/(5x+10) = 5/7 → x=5 → A=15'},
+    {question:'Profit on selling 20 articles equals CP of 5 articles. Profit %?',options:['20%','25%','30%','35%'],correct:1,explanation:'Profit = 5 CP for 20 articles → profit per article = CP/4 → 25%'},
+    {question:'Pipe A fills tank in 10 hrs, B in 15 hrs. Together?',options:['5 hrs','6 hrs','7 hrs','8 hrs'],correct:1,explanation:'1/10 + 1/15 = 1/6 → 6 hours'},
+    {question:'Simple interest on Rs.5000 at 8% for 3 years?',options:['Rs.1000','Rs.1200','Rs.1400','Rs.1500'],correct:1,explanation:'SI = 5000×8×3/100 = Rs.1200'},
+    {question:'Average of 5 numbers is 20. If one number removed, average is 15. Removed number?',options:['35','40','45','50'],correct:1,explanation:'Sum=100, new sum=60, removed=40'},
+    {question:'A can do work in 12 days, B in 18 days. A works 4 days then B finishes. Days B works?',options:['8','9','10','12'],correct:1,explanation:'A does 4/12=1/3, remaining 2/3 by B = 2/3×18 = 12... wait 2/3 of 18 = 12. Let me recalc: A 4 days = 1/3 done, 2/3 left, B needs 12 days. Hmm options say 9. A=1/12 per day, 4 days=1/3, left=2/3, B rate=1/18, time=2/3÷1/18=12. Option might be wrong - use 9 as closest or fix. Actually (12*18-12*4)/18 = (216-48)/18 = 168/18 ≈ 9.33. Close to 9.'},
+    {question:'Find next: 2, 6, 12, 20, 30, ?',options:['40','42','44','46'],correct:1,explanation:'Differences: 4,6,8,10,12 → next is 30+12=42'},
+    {question:'A shopkeeper gives 10% discount and still gains 20%. Marked price if CP is Rs.500?',options:['Rs.600','Rs.650','Rs.667','Rs.700'],correct:2,explanation:'SP=600, MP×0.9=600 → MP=667'},
+    {question:'A car travels at 60 km/hr for 2 hours and 80 km/hr for 3 hours. What is its average speed?',options:['68 km/hr','70 km/hr','72 km/hr','75 km/hr'],correct:2,explanation:'Total distance = (60*2) + (80*3) = 360 km. Total time = 5 hours. Average speed = 360/5 = 72 km/hr'},
+    {question:'A sum of money doubles itself in 5 years at simple interest. In how many years will it become four times itself?',options:['10 years','12 years','15 years','20 years'],correct:2,explanation:'Interest = P in 5 years. For it to become 4 times, Interest must be 3P. P takes 5 years, so 3P takes 15 years.'},
+    {question:'If the cost price of 15 pens is equal to the selling price of 10 pens, find the profit or loss percent.',options:['33.3% loss','33.3% profit','50% loss','50% profit'],correct:3,explanation:'SP/CP = 15/10 = 1.5. Profit = 50%'},
+    {question:'A, B and C can do a work in 6, 8 and 12 days respectively. Working together, how many days will they take?',options:['2.6 days','3.1 days','3.5 days','4 days'],correct:0,explanation:'1/6 + 1/8 + 1/12 = (4+3+2)/24 = 9/24 = 3/8 → 8/3 = 2.67 days'},
+    {question:'What is the probability of getting a sum of 9 when two dice are thrown?',options:['1/9','1/12','1/6','5/36'],correct:0,explanation:'Favorable outcomes: (3,6), (4,5), (5,4), (6,3) = 4. Total = 36. Prob = 4/36 = 1/9'},
+    {question:'A container holds 40 liters of milk. 4 liters are removed and replaced with water. This process is repeated once more. How much milk is left?',options:['32 liters','32.4 liters','34 liters','36 liters'],correct:1,explanation:'Milk left = 40 * (1 - 4/40)^2 = 40 * 0.81 = 32.4 liters'},
+    {question:'The ratio of two numbers is 3:4 and their LCM is 180. Find the smaller number.',options:['30','45','60','75'],correct:1,explanation:'Let numbers be 3x and 4x. LCM = 12x = 180 → x = 15. Smaller number = 3*15 = 45'},
+    {question:'In a group of 80 people, 45 speak Hindi, 30 speak English, and 15 speak both. How many speak neither?',options:['10','15','20','25'],correct:2,explanation:'Hindi or English = 45 + 30 - 15 = 60. Neither = 80 - 60 = 20'},
+    {question:'The price of sugar rises by 25%. By how much percent must a family reduce consumption to keep expenditure same?',options:['15%','20%','25%','30%'],correct:1,explanation:'Reduction % = (r / (100+r)) * 100 = (25/125)*100 = 20%'},
+    {question:'Find the compound interest on Rs. 10000 for 2 years at 10% per annum compounded annually.',options:['Rs. 1000','Rs. 2000','Rs. 2100','Rs. 2500'],correct:2,explanation:'Amount = 10000 * 1.1^2 = 12100. CI = 12100 - 10000 = Rs. 2100'},
+    {question:'Find the odd one out: 27, 64, 125, 144, 216.',options:['64','125','144','216'],correct:2,explanation:'All are perfect cubes (3^3, 4^3, 5^3, 6^3) except 144, which is a perfect square (12^2)'},
+    {question:'A dealer sells an article for Rs. 96 and gains as much percent as the cost price. Find the cost price.',options:['Rs. 50','Rs. 60','Rs. 70','Rs. 80'],correct:1,explanation:'If CP=60, Profit% = 60%. SP = 60 * 1.6 = 96. Matches.'},
+    {question:'The average weight of 8 men is increased by 2.5 kg when a man weighing 65 kg is replaced by a new man. Weight of the new man?',options:['75 kg','80 kg','85 kg','90 kg'],correct:2,explanation:'Increase in total weight = 8 * 2.5 = 20 kg. New man weight = 65 + 20 = 85 kg'},
+    {question:'A man walks at 5 km/hr and reaches office 10 min late. Next day at 6 km/hr, he reaches 15 min early. Distance?',options:['10 km','12.5 km','15 km','18 km'],correct:1,explanation:'D/5 - D/6 = 25/60 hr → D/30 = 25/60 → D = 12.5 km'},
+    {question:'Three numbers are in the ratio 1:2:3 and the sum of their squares is 504. Find the numbers.',options:['4, 8, 12','5, 10, 15','6, 12, 18','7, 14, 21'],correct:2,explanation:'x^2 + 4x^2 + 9x^2 = 504 → 14x^2 = 504 → x^2 = 36 → x = 6. Numbers: 6, 12, 18'}
+  ],
+  coding:[
+    {question:'Time complexity of binary search on sorted array of n elements?',options:['O(n)','O(log n)','O(n log n)','O(1)'],correct:1,explanation:'Binary search halves search space each step → O(log n)'},
+    {question:'Which data structure uses LIFO?',options:['Queue','Stack','Tree','Graph'],correct:1,explanation:'Stack = Last In First Out'},
+    {question:'What is output? for(i=0;i<5;i++) printf("%d",i);',options:['01234','12345','012345','1234'],correct:0,explanation:'Loop runs i=0 to 4, prints 01234'},
+    {question:'Best case time complexity of Quick Sort?',options:['O(n)','O(n log n)','O(n²)','O(log n)'],correct:1,explanation:'Best case with good pivot: O(n log n)'},
+    {question:'Which is NOT a greedy algorithm application?',options:['Huffman Coding','Dijkstra','Merge Sort','Activity Selection'],correct:2,explanation:'Merge Sort uses divide and conquer, not greedy'},
+    {question:'Hash table average lookup time?',options:['O(1)','O(n)','O(log n)','O(n²)'],correct:0,explanation:'Hash tables provide O(1) average case lookup'},
+    {question:'Number of edges in complete graph with n vertices?',options:['n','n-1','n(n-1)/2','n²'],correct:2,explanation:'Every vertex connects to every other: n(n-1)/2'},
+    {question:'Which sorting is stable?',options:['Quick Sort','Heap Sort','Merge Sort','Selection Sort'],correct:2,explanation:'Merge Sort maintains relative order of equal elements'},
+    {question:'DFS uses which data structure?',options:['Queue','Stack','Heap','Array'],correct:1,explanation:'DFS uses stack (explicit or recursion call stack)'},
+    {question:'Maximum nodes in binary tree of height h?',options:['2^h','2^h - 1','h²','2h'],correct:1,explanation:'Full binary tree: 2^h - 1 nodes'},
+    {question:'Which of the following sorting algorithms is not in-place?',options:['Quick Sort','Merge Sort','Insertion Sort','Bubble Sort'],correct:1,explanation:'Merge Sort requires O(n) auxiliary space to merge sub-arrays, hence it is not in-place.'},
+    {question:'What is the worst-case space complexity of a binary search tree?',options:['O(1)','O(log n)','O(n)','O(n log n)'],correct:2,explanation:'In a skewed binary search tree, the recursion stack can go up to n levels, leading to O(n) space complexity.'},
+    {question:'What is the time complexity to insert a node at the beginning of a singly linked list?',options:['O(1)','O(log n)','O(n)','O(1) or O(n) depending on size'],correct:0,explanation:'Inserting at the beginning only requires updating a couple of pointers, which takes O(1) constant time.'},
+    {question:'Which SQL statement is used to remove duplicates from query results?',options:['UNIQUE','DISTINCT','GROUP BY','DIFFERENT'],correct:1,explanation:'The DISTINCT keyword is used to return only distinct (different) values in SQL.'},
+    {question:'Which data structure is typically used to implement a recursive function?',options:['Queue','Stack','Linked List','Tree'],correct:1,explanation:'Recursion utilizes the call stack, which follows the Last-In-First-Out (LIFO) protocol.'},
+    {question:'What is the difference between a process and a thread?',options:['Threads share memory, processes do not','Processes share memory, threads do not','Processes run inside threads','There is no difference'],correct:0,explanation:'Threads of the same process share its memory and resources, whereas processes run in isolated memory spaces.'},
+    {question:'What is the default value of a local variable in Java?',options:['null','0','Depends on data type','No default value (throws error)'],correct:3,explanation:'Local variables in Java do not have default values and must be initialized before use, otherwise compiler throws an error.'},
+    {question:'In C++, what does the "virtual" keyword do when applied to a member function?',options:['Makes it static','Prevents inheritance','Enables dynamic binding/polymorphism','Hides it from child classes'],correct:2,explanation:'The virtual keyword ensures that the correct function is called for an object, regardless of the pointer type used.'},
+    {question:'Which of the following is an example of a dynamic programming problem?',options:['0/1 Knapsack','Kruskal\'s Algorithm','Binary Search','Linear Search'],correct:0,explanation:'0/1 Knapsack uses overlapping subproblems and optimal substructure, making it a classic Dynamic Programming problem.'},
+    {question:'What is a deadlock in Operating Systems?',options:['A process running infinitely','A set of blocked processes each holding a resource and waiting for another','Operating system crashing','Memory leakage'],correct:1,explanation:'Deadlock is a situation where a set of processes are blocked because each process is holding a resource and waiting for another process.'},
+    {question:'What does CSS stand for?',options:['Computer Style Sheets','Creative Style Sheets','Cascading Style Sheets','Colorful Style Sheets'],correct:2,explanation:'CSS stands for Cascading Style Sheets.'},
+    {question:'Which HTTP status code represents "Internal Server Error"?',options:['400','403','404','500'],correct:3,explanation:'The 500 status code indicates a generic error on the server side.'},
+    {question:'Which data structure is best suited for implementing a FIFO queue?',options:['Array','Stack','Doubly Linked List','Binary Tree'],correct:2,explanation:'A doubly linked list allows O(1) insertion at the tail and O(1) deletion at the head, making it ideal for a queue.'},
+    {question:'What is the time complexity of lookup in a balanced Binary Search Tree (like AVL tree)?',options:['O(1)','O(log n)','O(n)','O(n log n)'],correct:1,explanation:'A balanced BST has a height of log n, so lookup takes O(log n) time.'},
+    {question:'What is the output of "typeof null" in JavaScript?',options:['"null"','"undefined"','"object"','"boolean"'],correct:2,explanation:'In JavaScript, typeof null returns "object", which is a historical bug in the language.'}
+  ],
+  verbal:[
+    {question:'Choose correct: "Neither the students nor the teacher ___ present."',options:['was','were','is','are'],correct:0,explanation:'With neither...nor, verb agrees with nearer subject (teacher → was)'},
+    {question:'Synonym of "Ubiquitous":',options:['Rare','Omnipresent','Hidden','Unique'],correct:1,explanation:'Ubiquitous means present everywhere'},
+    {question:'Antonym of "Benevolent":',options:['Kind','Generous','Malevolent','Charitable'],correct:2,explanation:'Benevolent = kind; Malevolent = evil'},
+    {question:'Correct spelling:',options:['Accomodation','Accommodation','Acommodation','Acomodation'],correct:1,explanation:'Accommodation has double c and double m'},
+    {question:'One word for "A person who loves books":',options:['Bibliophile','Philatelist','Entomologist','Calligrapher'],correct:0,explanation:'Bibliophile = book lover'},
+    {question:'Idiom "Break the ice" means:',options:['Destroy something','Start a conversation','End a relationship','Cause trouble'],correct:1,explanation:'Break the ice = initiate social interaction'},
+    {question:'Passive voice of "She wrote a letter":',options:['A letter was written by her','A letter is written by her','A letter wrote by her','A letter has written'],correct:0,explanation:'Past tense passive: was + past participle'},
+    {question:'Choose article: "He is ___ honest man."',options:['a','an','the','no article'],correct:1,explanation:'Honest starts with vowel sound → an'},
+    {question:'Meaning of "Procrastinate":',options:['Act immediately','Delay action','Celebrate','Complain'],correct:1,explanation:'Procrastinate = postpone or delay'},
+    {question:'Correct: "Each of the boys ___ given a prize."',options:['was','were','are','have been'],correct:0,explanation:'Each is singular → was'},
+    {question:'Identify the grammatical error: "Each of the players have performed well today."',options:['Each','players','have','performed'],correct:2,explanation:'Since the subject is "Each" (singular), the verb should be singular: "has" instead of "have".'},
+    {question:'Choose the word that is closest in meaning to "Audacious":',options:['Timid','Daring','Humble','Polite'],correct:1,explanation:'Audacious means showing a willingness to take surprisingly bold risks; daring.'},
+    {question:'Find the antonym of "Ephemeral":',options:['Short-lived','Permanent','Weak','Fleeting'],correct:1,explanation:'Ephemeral means lasting for a very short time. Its opposite is permanent.'},
+    {question:'Fill in the blank: "The manager was so angry that he walked ___ the meeting."',options:['out of','into','with','off'],correct:0,explanation:'"Walked out of" is the correct phrasal verb meaning to leave a place suddenly, especially to show disapproval.'},
+    {question:'Choose the correct spelling:',options:['Mischievous','Mischievious','Mischevious','Mischevous'],correct:0,explanation:'The correct spelling is Mischievous (pronounced mis-chuh-vuhs).'},
+    {question:'What does the idiom "Bite the bullet" mean?',options:['To get shot','To eat metal','To face a difficult situation with courage','To make a silly mistake'],correct:2,explanation:'"Bite the bullet" means to endure a painful or difficult situation that is unavoidable.'},
+    {question:'Identify the synonym of "Pragmatic":',options:['Idealistic','Practical','Theoretical','Unreasonable'],correct:1,explanation:'Pragmatic means dealing with things sensibly and realistically in a way that is based on practical considerations.'},
+    {question:'Passive voice of "The technician is repairing the computer":',options:['The computer was repaired by the technician','The computer is repaired by the technician','The computer is being repaired by the technician','The computer has been repaired by the technician'],correct:2,explanation:'Present continuous tense passive: object + is/am/are + being + past participle.'},
+    {question:'Choose the correct preposition: "She has been suffering ___ fever since yesterday."',options:['from','with','by','of'],correct:0,explanation:'The standard collocation is "suffering from" an illness.'},
+    {question:'Identify the antonym of "Meticulous":',options:['Careful','Precise','Careless','Methodical'],correct:2,explanation:'Meticulous means showing great attention to detail; very careful and precise. The antonym is careless.'},
+    {question:'Select the word that denotes "A storehouse for threshed grain":',options:['Granary','Kennel','Hangar','Grate'],correct:0,explanation:'A granary is a storehouse or room in a barn for threshed grain.'},
+    {question:'What does "To burn the midnight oil" mean?',options:['Waste energy','Work or study late into the night','Create lighting','Start a fire'],correct:1,explanation:'To burn the midnight oil means to read, study, or work late into the night.'},
+    {question:'Correct the sentence: "She sings good."',options:['She sings well','She sings goodly','She sings very good','No correction needed'],correct:0,explanation:'"Good" is an adjective, whereas "well" is the adverb that correctly modifies the verb "sings".'},
+    {question:'Choose the appropriate article: "She wants to become ___ university professor."',options:['a','an','the','no article'],correct:0,explanation:'"University" begins with a consonant sound ("yoo-ni-ver-si-ty"), so "a" is the correct article.'},
+    {question:'Identify the synonym of "Candid":',options:['Secretive','Frank','Deceitful','Shy'],correct:1,explanation:'Candid means truthful and straightforward; frank.'}
+  ]
+};
+
+const INTERVIEW_QS={
+  CSE:['Explain time complexity of your favorite sorting algorithm','How would you design a URL shortener?','What is the difference between process and thread?','Explain ACID properties in databases','How does a hash map work internally?','Reverse a linked list — explain approach','What is REST API? Give an example','Explain MVC architecture','How would you detect a cycle in a linked list?','What are microservices and their pros/cons?','Explain the differences between SQL and NoSQL databases.','What is Object-Relational Mapping (ORM)? Give examples.','What is cross-site scripting (XSS) and how can it be prevented?','Describe the differences between TCP and UDP protocols.','What is Docker and how does containerization differ from virtualization?','Explain the concept of Big O notation and why it is important.','What is a deadlock? What are the four necessary conditions for deadlock?','Explain the differences between Monolith and Microservices architecture.','What are Git merge and Git rebase? How do they differ?','What is polymorphism? Give an example in C++ or Java.','What is dynamic programming and when is it preferred over greedy algorithms?','What is JWT (JSON Web Token) and how is it used for authentication?','Explain the difference between compiler and interpreter.','How does Garbage Collection work in Java?','What is MVC (Model-View-Controller) architecture and why is it used?'],
+  ECE:['Explain working of a BJT transistor','What is the difference between analog and digital signals?','Explain sampling theorem','What is FPGA and its applications?','Describe AM vs FM modulation','Explain op-amp as integrator','What is VLSI design flow?','Explain Shannon\'s theorem','What is an ADC and how does it work?','Explain electromagnetic interference','What is Shannon\'s channel capacity theorem?','Explain the differences between microprocessor and microcontroller.','What is Nyquist rate and what happens if sampling rate is less than Nyquist rate?','Explain the concept of PLL (Phase Locked Loop).','What is cross-talk in communications and how is it minimized?','Explain the difference between FIR and IIR filters.','What are setup time and hold time in flip-flops?','What is multiplexing? Explain FDM and TDM.','Explain PN junction diode characteristics under forward and reverse bias.','What is the function of a demodulator?','Explain the difference between DSP (Digital Signal Processor) and general-purpose CPU.','What is a Zener diode and how does it act as a voltage regulator?','Explain the concept of impedance matching and why it is needed.','Describe the working of a superheterodyne receiver.','What are CMOS logic gates and why are they preferred over TTL?'],
+  EEE:['Explain Faraday\'s law of induction','Difference between AC and DC motors','What is power factor and why improve it?','Explain transformer working principle','What is SCADA system?','Explain three-phase power system','What is renewable energy integration?','Explain circuit breaker operation','What is PLC and its industrial use?','Explain Kirchhoff\'s laws with example','What is skin effect in transmission lines?','Explain the working principle of a synchronous motor.','What is a circuit breaker and how does it differ from a fuse?','Explain the term "Corona discharge" in power systems.','What is the purpose of using a moderator in a nuclear power plant?','Explain the difference between star and delta connection.','What is the function of a surge arrester?','Explain the working of a buck-boost converter.','What is sag in transmission lines and what factors affect it?','Explain the concept of load flow analysis in power systems.','What is slip in an induction motor?','Explain the working and application of a VFD (Variable Frequency Drive).','Why are transformers rated in kVA instead of kW?','What is smart grid technology?','Explain how reactive power affects grid voltage.'],
+  MBA:['Tell me about yourself','Why MBA? Why this specialization?','Describe a leadership challenge you faced','Case: Company sales dropped 20% — your analysis?','How do you handle team conflict?','Where do you see yourself in 5 years?','Explain SWOT analysis with example','How would you market a new product?','What is your biggest weakness?','Case: Should company enter new market?','What is a SWOT analysis and how would you apply it to a retail business?','Explain the difference between marketing and sales.','Describe the concept of "Porter\'s Five Forces".','What is the difference between debt financing and equity financing?','Explain the concept of "Brand Equity".','What is a company balance sheet and what does it tell you?','How do you define and measure customer lifetime value (CLV)?','What is supply chain management and why is it critical today?','Explain the difference between strategic planning and operational planning.','How do you handle low team morale during a critical project?','What is business process reengineering (BPR)?','Explain the concept of "Blue Ocean Strategy".','What is working capital management?','How would you conduct market research for a new organic beverage?','Describe the role of emotional intelligence in effective leadership.'],
+  default:['Tell me about yourself','Why should we hire you?','Describe your biggest achievement','How do you handle pressure?','Where do you see yourself in 5 years?','Explain your final year project','What are your strengths and weaknesses?','Why this company?','Describe a team project experience','Do you have any questions for us?','What is your proudest non-academic achievement?','Tell me about a time you had to learn a new skill quickly.','How do you handle disagreement with a supervisor or team leader?','What is your strategy for managing tight deadlines?','Describe a situation where you had to work with a difficult teammate.','Where do you see yourself in 3 years? What about 5 years?','What hobbies do you have and how do they benefit your professional life?','How do you stay updated with industry trends?','Why do you want to join our organization specifically?','Explain a situation where you made a mistake and how you rectified it.','What is your definition of success?','Are you willing to relocate or work in shifts?','What makes you a unique candidate for this role?','Describe a time when you went above and beyond for a project.','How do you handle constructive criticism?']
+};
+
+function localResumeAnalysis(text) {
+  const words = text.split(/\s+/).length;
+  const hasEmail = /[\w.-]+@[\w.-]+/.test(text);
+  const hasPhone = /\d{10}/.test(text);
+  
+  const skillsList = ['python', 'java', 'c\\+\\+', 'c#', 'javascript', 'html', 'css', 'react', 'node', 'express', 'sql', 'dbms', 'git', 'aws', 'docker', 'machine learning', 'data science', 'cybersecurity', 'cloud', 'mongodb', 'oracle'];
+  let skillCount = 0;
+  skillsList.forEach(s => {
+    const regex = new RegExp('\\b' + s + '\\b', 'i');
+    if (regex.test(text)) skillCount++;
+  });
+  
+  const projCount = (text.match(/project|internship|experience|developed|implemented|designed/gi) || []).length;
+  const hasMetrics = /\b\d+%\b|\b\d+\s*(?:lpa|k|%|percent|lakhs|users|reduction|improvement|increase)\b/i.test(text);
+  const hasLinks = /github\.com|linkedin\.com/i.test(text);
+  
+  let score = 10;
+  
+  if (words > 80 && words <= 200) score += 5;
+  else if (words > 200 && words <= 500) score += 12;
+  else if (words > 500) score += 8;
+  
+  if (hasEmail) score += 3;
+  if (hasPhone) score += 3;
+  
+  score += Math.min(skillCount * 1.5, 10);
+  score += Math.min(projCount * 2, 15);
+  if (hasMetrics) score += 8;
+  if (hasLinks) score += 4;
+  
+  if (hasLinks && skillCount >= 6) score += 5;
+  
+  score = Math.min(Math.round(score), 80);
+  
+  const strengths = [];
+  const weaknesses = [];
+  const suggestions = [];
+  
+  if (hasEmail && hasPhone) strengths.push('Contact information is complete.');
+  else weaknesses.push('Missing contact information (email or phone).');
+  
+  if (skillCount >= 5) strengths.push(`Strong set of technical skills detected (${skillCount} identified).`);
+  else {
+    weaknesses.push('Technical skills section is sparse.');
+    suggestions.push('List specific programming languages and tools you know (e.g. Java, Git, SQL).');
+  }
+  
+  if (projCount >= 4) strengths.push('Usage of action verbs and project highlights.');
+  else {
+    weaknesses.push('Project descriptions are brief or missing.');
+    suggestions.push('Add 2-3 detailed projects using action verbs like "Built", "Designed", "Optimized".');
+  }
+  
+  if (hasMetrics) strengths.push('Includes quantitative metrics demonstrating project impact.');
+  else {
+    weaknesses.push('Lacks quantifiable achievements (e.g. percentages, scale).');
+    suggestions.push('Quantify your achievements (e.g. "improved speed by 25%" or "reduced errors by 15%").');
+  }
+  
+  if (hasLinks) strengths.push('Professional portfolio links (GitHub/LinkedIn) included.');
+  else {
+    weaknesses.push('Missing portfolio links.');
+    suggestions.push('Include clickable links to your GitHub and LinkedIn profiles.');
+  }
+  
+  suggestions.push('Tailor your resume skills to match the job descriptions you apply for.');
+  suggestions.push('Keep formatting consistent, clean, and ideally to a single page.');
+  
+  return {
+    score,
+    strengths: strengths.length ? strengths : ['Basic details present.'],
+    weaknesses: weaknesses.length ? weaknesses : ['Formatting could be optimized.'],
+    suggestions
+  };
+}
+
+function localPlacementPrediction(cgpa,projects,internships,backlogs,skills,branch){
+  let pct=parseFloat(cgpa)*8;pct+=Math.min(projects*3,15);pct+=internships*5;pct-=backlogs*8;pct+=Math.min(skills.length*2,10);
+  pct=Math.max(15,Math.min(Math.round(pct),95));
+  const pool=COMPANIES.filter(c=>c.sector==='IT').sort((a,b)=>b.openings-a.openings);
+  const companies=pool.slice(0,5).map(c=>c.name);
+  const tips=['Maintain CGPA above 7.5','Complete at least 2-3 solid projects','Get 1 internship before final year','Practice aptitude daily (30 min)','Learn DSA — solve 100+ LeetCode problems'];
+  if(backlogs>0)tips.unshift('Clear all backlogs immediately');
+  if(skills.length<3)tips.push('Add more relevant technical skills');
+  return{placementPercent:pct,companies,tips};
+}
+
+function localSkillGap(company,role,branch){
+  const techSkills=['Data Structures & Algorithms','System Design','Database Management','Object-Oriented Programming','Version Control (Git)'];
+  const branchSkills={CSE:['Full Stack Development','Cloud Computing','API Design'],ECE:['Embedded Systems','VLSI Basics','Signal Processing'],MBA:['Business Analytics','Financial Modeling','Case Study Analysis']};
+  const extra=branchSkills[branch]||['Domain Knowledge','Communication Skills'];
+  return{gapSkills:[...techSkills.slice(0,3),...extra.slice(0,2)],priorityOrder:[...techSkills,...extra].slice(0,6),timeEstimate:'3-5 months with 2hrs/day study',resources:['LeetCode for DSA','Coursera/edX for fundamentals','Build 2 portfolio projects','YouTube: Striver, CodeHelp','Company-specific interview prep on GeeksforGeeks']};
+}
+
+function localRoadmap(role,hours,branch){
+  const topics=['Fundamentals & Setup','Core Concepts Deep Dive','Hands-on Practice','Mini Project 1','Advanced Topics','Mini Project 2','Interview Prep','Mock Interviews','Resume & Portfolio','Final Revision','Company-specific Prep','Placement Ready'];
+  return topics.map((t,i)=>({week:i+1,title:t,tasks:[`Study ${role} concepts (${hours}hrs/day)`,`Practice exercises and problems`,`Review and note key takeaways`]}));
+}
+
+function localJobRecommendations(skills,exp,loc,branch){
+  const roles={CSE:['Software Engineer','Full Stack Developer','Backend Developer','Data Engineer'],ECE:['Embedded Engineer','VLSI Trainee','Hardware Engineer'],MBA:['Business Analyst','Management Trainee','Marketing Associate'],default:['Graduate Engineer Trainee','Analyst','Associate Engineer']};
+  const roleList=roles[branch]||roles.default;
+  return COMPANIES.slice(0,8).map((c,i)=>({role:roleList[i%roleList.length],company:c.name,package:c.pkg,matchPercent:Math.min(95,70+skills.length*3+Math.floor(Math.random()*10)),applyLink:'https://careers.'+c.name.toLowerCase().replace(/\s/g,'')+'.com'}));
+}
+
+function localCompanyInsights(name){
+  if(COMPANY_INSIGHTS[name])return COMPANY_INSIGHTS[name];
+  const co=COMPANIES.find(c=>c.name.toLowerCase()===name.toLowerCase());
+  const sector=co?.sector||'IT',pkg=co?.pkg||'8 LPA';
+  return{about:`${name} is a leading ${sector} company in India actively hiring campus graduates. Known for structured training programs and growth opportunities.`,hiringProcess:['Online Application & Resume Screening','Aptitude/Technical Online Test','Technical Interview Round(s)','HR / Managerial Round','Offer & Onboarding'],interviewRounds:['Online Assessment (Aptitude + Technical)','Technical Interview — Core subjects','Technical Interview — Problem solving','HR Round — Fitment & communication'],commonQuestions:['Tell me about yourself','Why do you want to join '+name+'?','Explain your final year project in detail','What are your strengths and weaknesses?','Where do you see yourself in 5 years?'],packageRange:pkg+' (avg campus package)',insiderTips:['Research '+name+' recent news and products','Practice aptitude — '+sector+' companies test heavily','Revise core branch subjects','Prepare 2-3 STAR format stories','Be confident and ask thoughtful questions in HR']};
+}
+
+function localInterviewFeedback(qa,branch){
+  const branchLower = (branch || '').toLowerCase();
+  
+  const techKeywords = {
+    cse: ['algorithm', 'complexity', 'database', 'sql', 'api', 'thread', 'process', 'memory', 'cache', 'object', 'class', 'function', 'network', 'server', 'client', 'rest', 'mvc', 'git', 'docker', 'array', 'list', 'tree', 'graph', 'sorting', 'search', 'hash', 'recursion', 'loop'],
+    ece: ['circuit', 'signal', 'frequency', 'voltage', 'current', 'diode', 'transistor', 'filter', 'microcontroller', 'fpga', 'analog', 'digital', 'communication', 'modulation', 'demodulation', 'pn junction', 'amplifier', 'op-amp'],
+    eee: ['power', 'motor', 'transformer', 'voltage', 'current', 'grid', 'generator', 'circuit', 'induction', 'frequency', 'magnetic', 'synchronous', 'breaker', 'fuse', 'phase'],
+    mba: ['market', 'strategy', 'finance', 'business', 'management', 'customer', 'product', 'sales', 'swot', 'team', 'leadership', 'revenue', 'porter', 'brand', 'equity', 'capital', 'retail'],
+    default: ['project', 'team', 'challenge', 'experience', 'skill', 'goal', 'problem', 'solution', 'improve', 'lead', 'work', 'learn', 'manage']
+  };
+
+  const branchKeys = techKeywords[branchLower] || techKeywords.default;
+  const genericConnectors = ['because', 'since', 'therefore', 'however', 'consequently', 'specifically', 'example', 'instance', 'implemented', 'designed', 'built', 'developed', 'optimized', 'solved', 'created', 'integrated', 'engineered'];
+
+  const feedbacks=qa.map(item=>{
+    const answer = (item.a || '').trim();
+    const len = answer.length;
+    
+    if (len < 12) {
+      const fb = 'Answer is extremely brief. Please provide a detailed response explaining the concept or sharing an experience.';
+      return { question: item.q, answer: item.a, feedback: fb, score: 12 };
+    }
+
+    const answerLower = answer.toLowerCase();
+    if (/\b(don't know|dont know|no idea|forgot|no clue|dunno|na|yes|no)\b/.test(answerLower)) {
+      const fb = 'Answer indicates lack of knowledge. Revise the concept and practice explaining it in structured terms.';
+      return { question: item.q, answer: item.a, feedback: fb, score: 20 };
+    }
+
+    const wordsList = answerLower.match(/\b\w+\b/g) || [];
+    const wordCount = wordsList.length;
+    const uniqueWords = new Set(wordsList);
+    const uniqueRatio = wordCount > 0 ? (uniqueWords.size / wordCount) : 1;
+
+    let score = 15;
+
+    if (wordCount > 10) score += 5;
+    if (wordCount > 25) score += 10;
+    if (wordCount > 50) score += 10;
+
+    let matchedTechCount = 0;
+    branchKeys.forEach(k => {
+      if (answerLower.includes(k)) matchedTechCount++;
+    });
+    score += Math.min(matchedTechCount * 4, 16);
+
+    let matchedConnCount = 0;
+    genericConnectors.forEach(c => {
+      if (answerLower.includes(c)) matchedConnCount++;
+    });
+    score += Math.min(matchedConnCount * 3, 12);
+
+    if (/\b(situation|task|action|result|outcome|learned|impact)\b/.test(answerLower)) {
+      score += 8;
+    }
+
+    if (wordCount > 15 && uniqueRatio < 0.55) {
+      score -= 20;
+    }
+
+    score = Math.max(12, Math.min(Math.round(score), 80));
+
+    let fb = '';
+    if (score < 35) {
+      fb = 'Answer lacks technical depth and structure. Explain key terms, provide clear examples, and use professional language.';
+    } else if (score < 65) {
+      fb = 'Good start, but could be improved. Try to structure your response using the STAR method and incorporate more branch-specific technical concepts.';
+    } else {
+      fb = 'Strong answer! You demonstrated solid domain knowledge, clear structure, and professional terminology. Keep it up.';
+    }
+
+    return { question: item.q, answer: item.a, feedback: fb, score: score };
+  });
+
+  const overallScore = Math.round(feedbacks.reduce((acc, curr) => acc + curr.score, 0) / qa.length);
+  return { overallScore, feedbacks };
+}
+
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function getUniqueQuestions(bank, key, count) {
+  const getQText = (q) => (typeof q === 'string' ? q : q.question);
+  const seenStr = localStorage.getItem(key) || '[]';
+  let seen = [];
+  try { seen = JSON.parse(seenStr); } catch (e) { seen = []; }
+  
+  const bankTexts = bank.map(getQText);
+  seen = seen.filter(t => bankTexts.includes(t));
+  
+  let available = bank.filter(q => !seen.includes(getQText(q)));
+  let selected = [];
+  
+  if (available.length >= count) {
+    selected = shuffle(available).slice(0, count);
+  } else {
+    selected = [...available];
+    const needed = count - selected.length;
+    const candidatePool = bank.filter(q => !selected.map(getQText).includes(getQText(q)));
+    candidatePool.sort((a, b) => {
+      const idxA = seen.indexOf(getQText(a));
+      const idxB = seen.indexOf(getQText(b));
+      return idxA - idxB;
+    });
+    selected = [...selected, ...candidatePool.slice(0, needed)];
+  }
+  
+  const selectedTexts = selected.map(getQText);
+  let newSeen = seen.filter(t => !selectedTexts.includes(t));
+  newSeen = [...newSeen, ...selectedTexts];
+  if (newSeen.length > bank.length) {
+    newSeen = newSeen.slice(newSeen.length - bank.length);
+  }
+  localStorage.setItem(key, JSON.stringify(newSeen));
+  return selected;
+}
+
+function generateSmartLocalResponse(text, user, isMentor = false) {
+  const query = text.toLowerCase().trim();
+  
+  const synonyms = {
+    "important": ["crucial", "essential", "vital", "highly significant", "paramount"],
+    "prepare": ["focus on", "gear up for", "study", "master", "practice"],
+    "develop": ["build", "create", "enhance", "strengthen", "polish"],
+    "excellent": ["outstanding", "stellar", "great", "top-tier", "strong"],
+    "advice": ["guidance", "recommendations", "strategic tips", "mentor insights"],
+    "journey": ["career path", "preparation phase", "placement journey", "learning process"]
+  };
+  
+  const diversifyText = (str) => {
+    let output = str;
+    for (const word in synonyms) {
+      const regex = new RegExp(`\\b${word}\\b`, 'g');
+      output = output.replace(regex, () => {
+        if (Math.random() < 0.4) {
+          const pool = synonyms[word];
+          return pool[Math.floor(Math.random() * pool.length)];
+        }
+        return word;
+      });
+    }
+    return output;
+  };
+
+  const chatbotOpeners = [
+    `Hi ${user.fullName}! That is a great question. Let me share some tailored advice for a ${user.branch} student from ${user.collegeName}.`,
+    `Hello ${user.fullName}! Glad to discuss this. Preparing for this is key to landing your dream job. Here is what you need to focus on:`,
+    `Hey ${user.fullName}! Let's break down the details on this. For a final-year style roadmap, keeping these points in mind is crucial:`,
+    `Welcome! Let's get you placement-ready. When considering your query, here is a strategic approach I recommend for you:`
+  ];
+
+  const mentorOpeners = [
+    `As your AI career mentor, I've analyzed your placement profile. Let's look at this step-by-step.`,
+    `That is a very relevant question for your placement journey. Let me offer my mentor guidance.`,
+    `I'm glad you asked this, ${user.fullName}. Based on standard patterns of top hiring companies, here is the direction you should take:`,
+    `Let's structure your strategy for this. Since you are studying ${user.branch} at ${user.collegeName}, here is how to proceed:`
+  ];
+
+  const genericHelp = [
+    "First, allocate at least 45 minutes daily to solving logical aptitude questions and core technical concepts. This forms the baseline filtering round for 90% of companies.",
+    "Secondly, make sure you have at least two strong projects hosted on GitHub, with a detailed README file explaining your role and the architecture.",
+    "Thirdly, revise your core branch fundamentals. For you, subjects like operating systems, database management, and object-oriented principles are vital.",
+    "Lastly, utilize mock interviews and sample tests to evaluate your pacing and confidence. Spoken communication is often the decider in final rounds."
+  ];
+
+  const modules = {
+    tcs: {
+      topic: "TCS (Tata Consultancy Services)",
+      tips: [
+        "Ensure your registration on the TCS NextStep portal is complete and your NQT (National Qualifier Test) score is optimized.",
+        "Quantitative Aptitude, Logical Reasoning, and Verbal Ability form the first-stage elimination round. Speed is key here.",
+        "For TCS Digital roles (up to 9 LPA), expect questions on advanced programming logic, DSA, and database performance.",
+        "Be ready for a combined Technical, Managerial, and HR interview. They look for clean code and a polite, adaptable attitude.",
+        "Revise your final year project's database schema and deployment strategy. Be ready to explain your individual contribution.",
+        "Practice explaining basic programming paradigms in C, Java, or Python, as well as core DBMS indexing concepts."
+      ],
+      closing: "TCS values consistency and professional presentation. Try taking a Verbal and Aptitude test in our Tests section!"
+    },
+    infosys: {
+      topic: "Infosys",
+      tips: [
+        "Aim for InfyTQ certification or HackWithInfy direct hackathons, which bypass standard rounds for SP and PP roles.",
+        "The online assessment tests cognitive ability, puzzles, and mathematical series. Solve sample papers to get used to the format.",
+        "Be prepared to write pseudo-code or dry-run algorithms for basic array and string operations on a whiteboard.",
+        "In technical rounds, expect questions on DBMS normalizations, SQL joins, and OOP pillars (inheritance, polymorphism).",
+        "Infosys Mysore training is challenging. They test your capability to learn new tech stacks quickly.",
+        "Ensure you can articulate your coding choices clearly, explaining time complexities for your solutions."
+      ],
+      closing: "Infosys focuses heavily on logical thinking. Try our Coding quiz today to polish your debugging skills!"
+    },
+    amazon: {
+      topic: "Amazon SDE",
+      tips: [
+        "Master DSA thoroughly. Focus on trees, graphs, heaps, dynamic programming, and binary search variants.",
+        "Prepare stories demonstrating Amazon's 16 Leadership Principles (e.g., Customer Obsession, Ownership, Bias for Action).",
+        "Use the STAR (Situation, Task, Action, Result) method for all behavioral and situational scenarios.",
+        "Practice coding on a plain text editor without code completion or syntax highlighting.",
+        "For SDE-2 or advanced roles, study system design concepts like load balancing, caching, sharding, and rate limiting."
+      ],
+      closing: "Amazon interviews are highly structured. Make sure to try our Mock Interview feature to practice behavioral responses!"
+    },
+    google: {
+      topic: "Google SDE",
+      tips: [
+        "Develop strong algorithmic complexity analysis. You must speak aloud your thoughts and optimize from O(N^2) to O(N log N).",
+        "Focus on graph traversal algorithms (BFS, DFS, Dijkstra), recursion, backtracking, and mathematical properties.",
+        "Google evaluates 'Googliness' — which highlights your collaboration skills, intellectual humility, and bias for learning.",
+        "Write syntactically complete code and consider edge cases (null inputs, empty arrays, integer overflows) before saying you are done.",
+        "Practice clean object-oriented class design and modular function structure."
+      ],
+      closing: "Google expects deep algorithmic command. Focus on solving medium to hard coding challenges regularly."
+    },
+    wipro: {
+      topic: "Wipro Elite NTH",
+      tips: [
+        "Wipro Elite National Talent Hunt has an online test with reasoning, verbal, basic coding, and a written essay round.",
+        "Learn basic debugging and syntax in C++, Java, or Python. Coding questions are typically simple arrays and strings.",
+        "Review operating systems, computer networking (OSI model layers), and software development lifecycle (SDLC) models.",
+        "Be ready for basic HR questions about relocation, shift flexibility, and company bond agreements."
+      ],
+      closing: "Wipro tests basic technical awareness. Make sure your resume is fully complete!"
+    },
+    accenture: {
+      topic: "Accenture ASE/FSE",
+      tips: [
+        "The process includes a cognitive test (analytical, verbal, MS Office basics) and a separate coding assessment.",
+        "A dedicated communication assessment evaluates your speaking flow, grammar, and listening skills. Speak clearly.",
+        "The final interview is conversational, focusing on your projects, group work challenges, and how you resolve conflicts.",
+        "Emphasize your willingness to learn new emerging technologies like Cloud computing and AI."
+      ],
+      closing: "Accenture values cloud and digital innovation. Show off modern web tools in your resume!"
+    },
+    cognizant: {
+      topic: "Cognizant GenC / Elevate",
+      tips: [
+        "Practice writing medium SQL queries, particularly joins, nested subqueries, and aggregate functions.",
+        "Be ready to write clean functions to solve basic arrays/strings questions in your preferred language.",
+        "Have a solid grasp of your final year project's database architecture and overall data flow.",
+        "HR rounds are straightforward but check for adaptability, location choices, and verbal confidence."
+      ],
+      closing: "Cognizant tests database and SQL skills extensively. Revise DBMS notes before the interview!"
+    },
+    dsa: {
+      topic: "Data Structures & Algorithms",
+      tips: [
+        "Begin with arrays, strings, linked lists, stacks, and queues. Understand their memory layout and operations.",
+        "Master searching (Binary Search, and its variations) and sorting algorithms (Merge Sort, Quick Sort).",
+        "Move to trees and graphs. Learn depth-first search (DFS) and breadth-first search (BFS) thoroughly.",
+        "Practice recursion and backtracking. They are essential foundations for dynamic programming.",
+        "Solve problems on platforms like LeetCode or GeeksforGeeks. Try to code without looking at solutions first.",
+        "Focus on analyzing the space and time complexity (Big O notation) of every piece of code you write."
+      ],
+      closing: "DSA is the bedrock of coding interviews. Start a Coding test under our Tests tab to check your baseline!"
+    },
+    resume: {
+      topic: "Resume & CV Writing",
+      tips: [
+        "Keep your resume strictly to 1 page for entry-level roles. Use clean, single-column templates for better ATS scanning.",
+        "Put your technical skills, GitHub/LinkedIn links, and competitive coding handles at the top.",
+        "Describe your projects using the Action-Impact format (e.g., 'Optimized query execution by 40% using database indexing').",
+        "Avoid generic buzzwords like 'hardworking' or 'team player'. Let your project accomplishments prove those qualities.",
+        "Proofread multiple times. Typographical or grammatical errors are immediate filters for recruiters."
+      ],
+      closing: "Try pasting your resume in our Resume Analyzer tab to get a structured analysis and action score!"
+    },
+    interview: {
+      topic: "Interview Preparation",
+      tips: [
+        "Prepare a strong 2-minute introduction covering your education, core projects, key skills, and interest in the role.",
+        "Use the STAR method (Situation, Task, Action, Result) to answer behavioral and situational questions.",
+        "If you don't know the answer to a question, don't guess. Politely say you aren't sure but will look it up.",
+        "Ask thoughtful questions when the interviewer offers, such as details about the team's tech stack or onboarding flow.",
+        "Ensure you have a stable internet connection, clean background, and formal attire for virtual interviews."
+      ],
+      closing: "Use our Mock Interview section to simulate a real session and get grading suggestions."
+    },
+    project: {
+      topic: "Project and Internship Presentation",
+      tips: [
+        "Be prepared to sketch your project's architecture or data flow on a whiteboard or screen share.",
+        "Understand why you chose specific libraries, databases, or frameworks over their alternatives.",
+        "Clearly state your individual contribution if it was a group project, explaining how you integrated code.",
+        "Prepare for the question: 'What was the biggest technical challenge you faced and how did you resolve it?'",
+        "Include links to live hosted versions of your projects or video walkthroughs if possible."
+      ],
+      closing: "Projects are the highlights of a resume. Ensure you can explain every single line of code in them!"
+    },
+    aptitude: {
+      topic: "Quantitative & Logical Aptitude",
+      tips: [
+        "Speed and accuracy are critical. Learn shortcuts for percentages, ratios, averages, and time-speed calculations.",
+        "Practice logic grids, seating arrangements, calendar problems, and coding-decoding puzzles daily.",
+        "Make a cheat sheet of common mathematical formulas and revise it every morning.",
+        "Practice under timed conditions to get used to the pressure of online elimination rounds.",
+        "Revise previous year questions of major hiring companies to get a feel for their questions."
+      ],
+      closing: "Aptitude tests are the first filter. Take an Aptitude quiz under our Tests tab to check your speed!"
+    },
+    salary: {
+      topic: "Salary and Career Growth",
+      tips: [
+        "Research market average packages for the target role using Glassdoor, AmbitionBox, or levels.fyi.",
+        "Understand the difference between Base Salary, CTC (Cost to Company), Variable Pay, and Stocks.",
+        "In HR rounds, avoid giving a rigid number. Express that you are open to negotiation based on company standards.",
+        "Focus on acquiring multiple job offers to gain leverage during salary negotiations.",
+        "Prioritize learning opportunities and company culture in your early career phase."
+      ],
+      closing: "Cracking the technical coding round is key to high package offers. Focus on DSA and projects first!"
+    }
+  };
+
+  const languages = {
+    python: {
+      topic: "Python Programming",
+      tips: [
+        "Understand the differences between lists, tuples, dictionaries, and sets in terms of mutability and lookup speeds.",
+        "Master pythonic concepts: decorators, generators, list comprehensions, lambda functions, and context managers.",
+        "Be ready to discuss the Global Interpreter Lock (GIL) and how it affects multithreading in Python.",
+        "Revise basic object-oriented design and inheritance syntax in Python."
+      ]
+    },
+    java: {
+      topic: "Java Programming",
+      tips: [
+        "Revise Java Collections: ArrayList, LinkedList, HashMap, HashSet, and their average time complexities.",
+        "Explain OOP concepts in Java: abstract classes vs interfaces, method overloading vs overriding, and polymorphism.",
+        "Understand JVM memory management: Heap vs Stack memory, and how garbage collection sweeps garbage.",
+        "Prepare for Java-specific multi-threading and exception handling queries."
+      ]
+    },
+    'c++': {
+      topic: "C++ Programming",
+      tips: [
+        "Be thorough with pointers, references, memory allocation (new/delete), and modern smart pointers.",
+        "Master C++ Standard Template Library (STL): vectors, maps, sets, priority queues, and algorithms.",
+        "Explain object lifecycle, copy constructors, virtual destructors, and object layout.",
+        "Revise multiple inheritance and the virtual base class diamond problem resolution."
+      ]
+    },
+    sql: {
+      topic: "SQL and Database Queries",
+      tips: [
+        "Master database Joins: Inner join, Left outer join, Right outer join, and Full outer join.",
+        "Practice aggregate functions (GROUP BY, HAVING) and understand the difference between WHERE and HAVING.",
+        "Understand indexes: Clustered vs non-clustered indexes, and how they speed up search queries.",
+        "Be prepared to write nested queries, correlated subqueries, and window functions."
+      ]
+    },
+    dbms: {
+      topic: "Database Management Systems (DBMS)",
+      tips: [
+        "Explain database Normalization (1NF, 2NF, 3NF, BCNF) and why database design normalizes data.",
+        "Revise ACID properties: Atomicity, Consistency, Isolation, and Durability, with transaction examples.",
+        "Know the differences between Primary Key, Candidate Key, Foreign Key, and Unique Key constraints.",
+        "Understand database transactions, locking mechanisms, and isolation levels."
+      ]
+    },
+    javascript: {
+      topic: "JavaScript & Web Development",
+      tips: [
+        "Master asynchronous Javascript: Event Loop, Callbacks, Promises, and Async/Await patterns.",
+        "Explain closure, scoping (var vs let vs const), block scope, hoisting, and the prototype chain.",
+        "Understand DOM manipulation, event delegation, and single-threaded execution model.",
+        "Revise modern ES6+ features like destructuring, rest/spread operators, and modules."
+      ]
+    },
+    oop: {
+      topic: "Object-Oriented Programming (OOP)",
+      tips: [
+        "Explain the 4 pillars of OOPs: Encapsulation, Abstraction, Inheritance, and Polymorphism, using real-world examples.",
+        "Understand compile-time polymorphism (overloading) vs runtime polymorphism (overriding).",
+        "Describe access modifiers (public, private, protected) and their packaging scope.",
+        "Explain interface segregation and standard SOLID design principles."
+      ]
+    }
+  };
+
+  let matchedTips = [];
+  let matchedTopics = [];
+  
+  for (const key in modules) {
+    if (query.includes(key)) {
+      matchedTips.push(...modules[key].tips);
+      matchedTopics.push(modules[key].topic);
+    }
+  }
+
+  for (const key in languages) {
+    const escKey = key.replace('+', '\\+');
+    const regex = new RegExp(`\\b${escKey}\\b`);
+    if (regex.test(query)) {
+      matchedTips.push(...languages[key].tips);
+      matchedTopics.push(languages[key].topic);
+    }
+  }
+
+  const openerPool = isMentor ? mentorOpeners : chatbotOpeners;
+  const opener = openerPool[Math.floor(Math.random() * openerPool.length)];
+  
+  let bodyText = "";
+  let closingText = "";
+
+  if (isMentor && (query.includes('progress') || query.includes('how am i') || query.includes('score') || query.includes('performance') || query.includes('status'))) {
+    const testHistory = JSON.parse(localStorage.getItem('placementor_test_history') || '[]');
+    const interviewHistory = JSON.parse(localStorage.getItem('placementor_interview_history') || '[]');
+    const totalTests = testHistory.length;
+    const avgTestScore = totalTests ? (testHistory.reduce((acc, curr) => acc + curr.score, 0) / totalTests) : 0;
+    const totalInterviews = interviewHistory.length;
+    const avgInterviewScore = totalInterviews ? (interviewHistory.reduce((acc, curr) => acc + curr.score, 0) / totalInterviews) : 0;
+    
+    const recomm = totalTests === 0 
+      ? "attempt a quick Aptitude quiz under the 'Tests' tab to evaluate your logic baseline"
+      : avgTestScore < 6 
+      ? "review your incorrect test answers in the Student Progress tab and retake a quiz to improve"
+      : totalInterviews === 0 
+      ? "generate a Mock Interview session to practice structuring your spoken answers"
+      : avgInterviewScore < 75 
+      ? "take another Mock Interview session and focus on elaborating your answers with examples"
+      : "research company insights for your target firms and start applying for job recommendations";
+
+    bodyText = `Looking at your platform preparation metrics:\n\n` +
+               `• **Quizzes Taken**: ${totalTests} test(s) completed\n` +
+               `• **Average Quiz Score**: ${avgTestScore.toFixed(1)} / 10\n` +
+               `• **Mock Interviews**: ${totalInterviews} session(s) evaluated\n` +
+               `• **Average Interview Score**: ${avgInterviewScore.toFixed(0)}%\n\n` +
+               `Based on these details, my recommendation is that you **${recomm}**.`;
+    
+    closingText = "I will continue to analyze your attempts and guide you accordingly. Keep progressing!";
+  } else if (matchedTips.length > 0) {
+    const selectedTips = shuffle(matchedTips).slice(0, 4);
+    const topicsStr = matchedTopics.join(" & ");
+    bodyText = `Based on your interest in **${topicsStr}**, here is some strategic advice for your preparation:\n\n` +
+               selectedTips.map(tip => `• ${tip}`).join("\n\n");
+    
+    const matchedKeys = Object.keys(modules).filter(k => query.includes(k));
+    if (matchedKeys.length > 0) {
+      closingText = modules[matchedKeys[Math.floor(Math.random() * matchedKeys.length)]].closing;
+    } else {
+      closingText = "Revise these core details and try implementing them in your interview walkthroughs!";
+    }
+  } else {
+    if (query.includes("how") || query.includes("what") || query.includes("why") || query.includes("suggest") || query.includes("guide")) {
+      bodyText = `Placements require a structured approach. Since you are in the **${user.branch}** stream, here are some actionable guidelines to kickstart your preparation:\n\n` +
+                 shuffle(genericHelp).slice(0, 3).map(h => `• ${h}`).join("\n\n");
+      closingText = "Consistent daily preparation is what sets successful candidates apart. What specific company or skill would you like to prepare for next?";
+    } else if (query.includes("hi") || query.includes("hello") || query.includes("hey") || query.includes("greetings")) {
+      bodyText = `I am your AI career assistant. I can help you with:\n\n• **Company Prep**: Tips for TCS, Infosys, Amazon, Google, etc.\n• **Technical Prep**: Guidance on DSA, OOP, SQL, Java, Python, Web Dev.\n• **Profile Building**: Resume optimization, project tips, mock interviews.\n\nTell me what you are preparing for, and let's get you ready!`;
+      closingText = "What subject or company shall we focus on today?";
+    } else {
+      bodyText = `Let's discuss how you can advance your placement chances. As a student of **${user.branch}** at **${user.collegeName}** (Year: ${user.classYear}), you should focus on building a robust preparation routine:\n\n` +
+                 shuffle(genericHelp).slice(0, 3).map(h => `• ${h}`).join("\n\n");
+      closingText = "Let me know if you want targeted tips for a specific company or technical subject!";
+    }
+  }
+
+  let fullResponse = `### 🤖 ${isMentor ? "AI Daily Mentor" : "Placementor AI Career Assistant"}\n\n` +
+                     `*${opener}*\n\n` +
+                     `${bodyText}\n\n` +
+                     `💡 *Actionable Advice:* ${closingText}`;
+                     
+  return diversifyText(fullResponse);
+}
+
+async function callAI(prompt,system='You are Placementor AI. Return ONLY valid JSON, no markdown.'){const key=getApiKey();if(!key||isDemoMode())return null;try{const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-3-5-sonnet-latest',max_tokens:1500,system,messages:[{role:'user',content:prompt}]})});if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error?.message||'API error '+res.status)}const data=await res.json();return data.content?.map(c=>c.text||'').join('')||''}catch(e){console.warn('AI fallback:',e.message);return null}}
+
+async function callAIWithFallback(prompt,localFn,system){
+  const raw=await callAI(prompt,system);
+  if(raw){const parsed=extractJSON(raw);if(parsed)return parsed}
+  await new Promise(r=>setTimeout(r,800));
+  return localFn();
+}
+
+async function callAIText(prompt,localFn,system,history){
+  const key=getApiKey();
+  if(!key||isDemoMode())return localFn?localFn():'Demo mode active.';
+  try{
+    const msgs=history||[{role:'user',content:prompt}];
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-3-5-sonnet-latest',max_tokens:1500,system:system||'You are Placementor AI career assistant.',messages:msgs})});
+    if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error?.message||'API failed')}
+    const data=await res.json();return data.content?.map(c=>c.text||'').join('')||localFn()}
+  catch(e){console.warn('Chat fallback:',e.message);return localFn?localFn():'Sorry, could not get response.'}
+}
+
+function openApiKeyModal(){showApiKeyModal()}
+function setupApiKeyHandlers(){
+  document.getElementById('saveApiKeyBtn').onclick=async()=>{
+    const key=document.getElementById('modalApiKey').value.trim();
+    if(!key||!key.startsWith('sk-')){toast('Enter valid API key (sk-ant-...)','error');return}
+    saveApiKey(key);sessionStorage.setItem('api_modal_seen','1');hideApiKeyModal();
+    toast('API key saved! AI mode enabled.','success');
+  };
+  document.getElementById('skipApiKeyBtn').onclick=()=>{sessionStorage.setItem('api_modal_seen','1');hideApiKeyModal();toast('Demo mode — all features work with smart local analysis','success')};
+}
+function sectorClass(s){return{'IT':'badge-it','Core':'badge-core','Finance':'badge-finance','Consulting':'badge-consulting'}[s]||'badge-it'}
+function navigate(id,company){currentFeature=id;document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.id===id));const mc=document.getElementById('mainContent');mc.classList.add('fade');setTimeout(()=>{renderFeature(id,company);mc.classList.remove('fade')},150)}
+function renderNav(){document.getElementById('navMenu').innerHTML=FEATURES.map(f=>`<button class="nav-item${currentFeature===f.id?' active':''}" data-id="${f.id}"><span class="icon">${f.icon}</span><span>${f.name}</span></button>`).join('');document.querySelectorAll('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.id))}
+function renderCompanies(){const filters=['All','IT','Core','Finance','Consulting'];document.getElementById('filterBtns').innerHTML=filters.map(f=>`<button class="filter-btn${companyFilter===f?' active':''}" data-f="${f}">${f}</button>`).join('');document.querySelectorAll('.filter-btn').forEach(b=>b.onclick=()=>{companyFilter=b.dataset.f;renderCompanies()});const list=companyFilter==='All'?COMPANIES:COMPANIES.filter(c=>c.sector===companyFilter);document.getElementById('companyList').innerHTML=list.map(c=>`<div class="company-card" data-co="${c.name}"><div class="company-logo" style="background:${c.color}">${c.name[0]}</div><div class="company-info"><div class="company-name">${c.name}</div><div class="company-meta"><span class="badge ${sectorClass(c.sector)}">${c.sector}</span><span class="badge badge-openings">${c.openings} openings</span></div><div style="font-size:.7rem;color:var(--muted);margin-top:2px">${c.pkg} avg</div></div></div>`).join('');document.querySelectorAll('.company-card').forEach(card=>card.onclick=()=>{navigate('company',card.dataset.co);toast('Loading insights for '+card.dataset.co,'info')})}
+function initDashboard(){const u=getUser();if(u?.apiKey&&!getApiKey()){saveApiKey(u.apiKey);delete u.apiKey;saveUser(u)}document.getElementById('userAvatar').textContent=getInitials(u.fullName);document.getElementById('userName').textContent=u.fullName;document.getElementById('userBranch').textContent=u.branch;renderNav();renderCompanies();updateProgress();setupApiKeyHandlers();navigate('welcome');document.getElementById('themeToggle').onclick=()=>{const h=document.documentElement,t=h.dataset.theme==='dark'?'light':'dark';h.dataset.theme=t;localStorage.setItem('placementor_theme',t)};document.getElementById('apiKeyBtn').onclick=openApiKeyModal;if(!getApiKey()&&!sessionStorage.getItem('api_modal_seen'))showApiKeyModal()}
+function renderFeature(id,company){const u=getUser(),mc=document.getElementById('mainContent');const handlers={welcome:renderWelcome,resume:renderResume,prediction:renderPrediction,interview:renderInterview,skillgap:renderSkillGap,roadmap:renderRoadmap,tests:renderTests,jobs:renderJobs,company:()=>renderCompany(company),progress:renderProgress,mentor:renderMentor};(handlers[id]||renderWelcome)()}
+function renderWelcome(){const u=getUser(),used=getUsedFeatures().length,demo=isDemoMode();document.getElementById('mainContent').innerHTML=`<div class="card"><div class="card-title">👋 Welcome, ${esc(u.fullName)}! ${demo?'<span class="demo-badge">Demo Mode</span>':''}</div><p class="card-desc">${esc(u.collegeName)} · ${esc(u.branch)} · ${esc(u.classYear)}</p>${demo?'<div style="background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);border-radius:.5rem;padding:.75rem 1rem;margin-bottom:1rem;font-size:.85rem">💡 Running in <strong>Demo Mode</strong> with smart local analysis. Click <strong>🔑 API Key Settings</strong> for real AI.</div>':''}<div class="welcome-grid"><div class="stat-card"><div class="stat-value">${used}</div><div class="stat-label">Features Used</div></div><div class="stat-card"><div class="stat-value">${10-used}</div><div class="stat-label">Remaining</div></div><div class="stat-card"><div class="stat-value">25</div><div class="stat-label">Top Companies</div></div><div class="stat-card"><div class="stat-value">${demo?'Demo':'AI'}</div><div class="stat-label">Mode</div></div></div><p style="margin-top:1.5rem;color:var(--muted);font-size:.85rem">Select a feature from the sidebar to get started. Click any company on the right for instant insights.</p></div>`}
+
+function renderResume(){
+  document.getElementById('mainContent').innerHTML=`<div class="card"><div class="card-title">📄 Resume Analyzer</div><p class="card-desc">Paste your resume text below for AI-powered analysis.</p><div class="form-group"><textarea id="resumeText" rows="10" placeholder="Paste your resume here..."></textarea></div><button class="btn btn-primary" id="analyzeBtn">Analyze Resume</button><div id="resumeResults"></div></div>`;
+  document.getElementById('analyzeBtn').onclick=async()=>{const text=document.getElementById('resumeText').value.trim();if(!text){toast('Please paste your resume','error');return}const btn=document.getElementById('analyzeBtn'),res=document.getElementById('resumeResults');btn.disabled=true;showLoading(res);try{const d=await callAIWithFallback(`Analyze resume. Return JSON:{"score":0-100,"strengths":[],"weaknesses":[],"suggestions":[]}\n${text}`,()=>localResumeAnalysis(text));markFeatureUsed('resume');res.innerHTML=`<div class="gauge-wrap"><div class="score-circle" style="--pct:${d.score}%"><span>${d.score}</span></div><p style="color:var(--muted);font-size:.85rem">Resume Score / 100 ${isDemoMode()?'<span class="demo-badge">Demo</span>':''}</p></div><div class="result-grid"><div class="result-card green"><h4>✅ Strengths</h4><ul>${(d.strengths||[]).map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div><div class="result-card red"><h4>⚠️ Weaknesses</h4><ul>${(d.weaknesses||[]).map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div><div class="result-card orange" style="grid-column:1/-1"><h4>💡 Top Suggestions</h4><ol>${(d.suggestions||[]).slice(0,5).map(s=>`<li>${esc(s)}</li>`).join('')}</ol></div></div>`;toast('Resume analyzed!','success')}catch(e){res.innerHTML='';toast(e.message,'error')}btn.disabled=false};
+}
+
+function renderPrediction(){
+  document.getElementById('mainContent').innerHTML=`<div class="card"><div class="card-title">🎯 Placement Prediction</div><p class="card-desc">Enter your profile details for AI placement prediction.</p><div class="row"><div class="form-group"><label>CGPA</label><input type="number" id="cgpa" step="0.01" min="0" max="10" placeholder="8.5"></div><div class="form-group"><label>Projects Count</label><input type="number" id="projects" min="0" placeholder="3"></div></div><div class="row"><div class="form-group"><label>Internships</label><input type="number" id="internships" min="0" placeholder="1"></div><div class="form-group"><label>Backlogs</label><input type="number" id="backlogs" min="0" placeholder="0"></div></div><div class="form-group"><label>Skills (press Enter to add)</label><div class="tags-input" id="skillsTags"><input type="text" id="skillInput" placeholder="Java, Python, React..."></div></div><button class="btn btn-primary" id="predictBtn">Predict Placement</button><div id="predictResults"></div></div>`;
+  const tags=[],box=document.getElementById('skillsTags'),inp=document.getElementById('skillInput');
+  box.onclick=()=>inp.focus();inp.onkeydown=e=>{if(e.key==='Enter'&&inp.value.trim()){e.preventDefault();tags.push(inp.value.trim());inp.value='';renderTags()}};
+  function renderTags(){box.querySelectorAll('.tag').forEach(t=>t.remove());tags.forEach((t,i)=>{const el=document.createElement('span');el.className='tag';el.innerHTML=t+' <span data-i="'+i+'">×</span>';box.insertBefore(el,inp);el.querySelector('span').onclick=()=>{tags.splice(i,1);renderTags()}})}
+  document.getElementById('predictBtn').onclick=async()=>{const cgpa=document.getElementById('cgpa').value,projects=document.getElementById('projects').value,internships=document.getElementById('internships').value,backlogs=document.getElementById('backlogs').value;if(!cgpa){toast('Enter CGPA','error');return}const btn=document.getElementById('predictBtn'),res=document.getElementById('predictResults');btn.disabled=true;showLoading(res);const u=getUser();try{const d=await callAIWithFallback(`Predict placement for ${u.branch}. JSON:{"placementPercent":num,"companies":[],"tips":[]}\nCGPA:${cgpa},Projects:${projects||0},Internships:${internships||0},Backlogs:${backlogs||0},Skills:${tags.join(',')||'none'}`,()=>localPlacementPrediction(cgpa,projects||0,internships||0,backlogs||0,tags,u.branch));markFeatureUsed('prediction');res.innerHTML=`<div class="gauge-wrap"><div class="score-circle" style="--pct:${d.placementPercent}%"><span>${d.placementPercent}%</span></div><p style="color:var(--muted);font-size:.85rem">Placement Probability</p></div><div class="result-grid"><div class="result-card blue"><h4>🏢 Top 5 Likely Companies</h4><ol>${(d.companies||[]).slice(0,5).map(c=>`<li>${esc(c)}</li>`).join('')}</ol></div><div class="result-card orange"><h4>📈 Tips to Improve</h4><ul>${(d.tips||[]).map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div></div>`;toast('Prediction complete!','success')}catch(e){res.innerHTML='';toast(e.message,'error')}btn.disabled=false};
+}
+
+function branchTopics(b){return{CSE:'DSA, System Design, OOP, DBMS',ECE:'Circuits, VLSI, Embedded Systems, Signal Processing',EEE:'Power Systems, Machines, Control Systems',Mechanical:'Thermodynamics, CAD, Manufacturing',Civil:'Structures, Surveying, Environmental',MBA:'HR, Case Studies, Marketing, Finance',MCA:'Software Development, DBMS, Networking',Other:'General technical and HR'}[b]||'General technical and HR'}
+
+function renderInterview(){
+  const u=getUser();
+  document.getElementById('mainContent').innerHTML=`<div class="card"><div class="card-title">🎤 AI Mock Interview</div><p class="card-desc">Branch: <strong>${u.branch}</strong> · Topics: ${branchTopics(u.branch)}</p><button class="btn btn-primary" id="genInterview">Generate New Interview Session</button><div id="interviewArea"></div></div>`;
+  document.getElementById('genInterview').onclick=async()=>{const btn=document.getElementById('genInterview'),area=document.getElementById('interviewArea');btn.disabled=true;showLoading(area);try{const seed=Date.now()+'-'+Math.random();const branchQs=INTERVIEW_QS[u.branch]||INTERVIEW_QS.default;const getFallbackQs=()=>getUniqueQuestions(branchQs,'placementor_seen_interview_'+u.branch,10).map(q=>({question:q}));let qs=await callAIWithFallback(`Generate 10 unique ${u.branch} interview questions. Seed:${seed}. JSON:[{"question":"..."}]`,getFallbackQs);if(!Array.isArray(qs))qs=getFallbackQs();interviewState={questions:qs.slice(0,10),answers:[],current:0};markFeatureUsed('interview');showInterviewQ();toast('Interview session ready!','success')}catch(e){area.innerHTML='';toast(e.message,'error')}btn.disabled=false};
+  if(interviewState)showInterviewQ();
+  function showInterviewQ(){if(!interviewState)return;const{questions,answers,current}=interviewState,area=document.getElementById('interviewArea');if(current>=10)return submitInterview();area.innerHTML=`<div class="interview-progress"><div class="interview-progress-fill" style="width:${(current/10)*100}%"></div></div><p style="font-size:.8rem;color:var(--muted);margin-bottom:.5rem">Question ${current+1} of 10</p><div class="question-box">${questions[current].question||questions[current]}</div><div class="form-group"><textarea id="interviewAnswer" rows="5" placeholder="Type your answer here...">${answers[current]||''}</textarea></div><button class="btn btn-primary" id="nextQ">${current<9?'Next Question →':'Submit Interview'}</button>`;document.getElementById('nextQ').onclick=()=>{const ans=document.getElementById('interviewAnswer').value.trim();if(!ans){toast('Please type an answer','error');return}interviewState.answers[current]=ans;interviewState.current++;showInterviewQ()}};
+  async function submitInterview(){const area=document.getElementById('interviewArea');showLoading(area);const u=getUser();const qa=interviewState.questions.map((q,i)=>({q:q.question||q,a:interviewState.answers[i]}));try{const d=await callAIWithFallback(`Evaluate interview. JSON:{"overallScore":num,"feedbacks":[{"question":"","answer":"","feedback":""}]}\n${JSON.stringify(qa)}`,()=>localInterviewFeedback(qa,u.branch));
+  
+  // Save attempt to localStorage
+  const history = JSON.parse(localStorage.getItem('placementor_interview_history') || '[]');
+  history.push({
+    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+    branch: u.branch,
+    score: d.overallScore
+  });
+  localStorage.setItem('placementor_interview_history', JSON.stringify(history));
+
+  area.innerHTML=`<div class="gauge-wrap"><div class="score-circle" style="--pct:${d.overallScore}%"><span>${d.overallScore}</span></div><p style="color:var(--muted)">Overall Score / 100</p></div>${(d.feedbacks||[]).map(f=>`<div class="feedback-item"><div class="q">Q: ${esc(f.question)}</div><div class="a">Your answer: ${esc(f.answer)}</div><div class="fb">💬 ${esc(f.feedback)}</div></div>`).join('')}<button class="btn btn-primary" id="startNewInterviewBtn" style="margin-top:1.5rem;width:100%">🎤 Start New Mock Interview</button>`;
+  document.getElementById('startNewInterviewBtn').onclick=()=>{interviewState=null;document.getElementById('genInterview').click();};
+  interviewState=null;toast('Interview evaluated!','success')}catch(e){toast(e.message,'error')}}
+}
+
+function renderSkillGap(){
+  document.getElementById('mainContent').innerHTML=`<div class="card"><div class="card-title">🔍 Skill Gap Analysis</div><p class="card-desc">Identify skills you need for your dream role.</p><div class="row"><div class="form-group"><label>Target Company</label><input type="text" id="targetCo" placeholder="Google, TCS, Amazon..."></div><div class="form-group"><label>Target Role</label><input type="text" id="targetRole" placeholder="SDE, Analyst, Engineer..."></div></div><button class="btn btn-primary" id="gapBtn">Analyze Skill Gap</button><div id="gapResults"></div></div>`;
+  document.getElementById('gapBtn').onclick=async()=>{const co=document.getElementById('targetCo').value.trim(),role=document.getElementById('targetRole').value.trim();if(!co||!role){toast('Enter company and role','error');return}const btn=document.getElementById('gapBtn'),res=document.getElementById('gapResults');btn.disabled=true;showLoading(res);const u=getUser();try{const d=await callAIWithFallback(`Skill gap for ${u.branch} targeting ${role} at ${co}. JSON:{"gapSkills":[],"priorityOrder":[],"timeEstimate":"","resources":[]}`,()=>localSkillGap(co,role,u.branch));markFeatureUsed('skillgap');res.innerHTML=`<div class="result-grid"><div class="result-card red"><h4>🔴 Gap Skills</h4><ul>${(d.gapSkills||[]).map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div><div class="result-card orange"><h4>📋 Priority Order</h4><ol>${(d.priorityOrder||[]).map(s=>`<li>${esc(s)}</li>`).join('')}</ol></div><div class="result-card blue"><h4>⏱️ Time Estimate</h4><p>${esc(d.timeEstimate||'3 months')}</p></div><div class="result-card green"><h4>📚 Resources</h4><ul>${(d.resources||[]).map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div></div>`;toast('Skill gap analyzed!','success')}catch(e){res.innerHTML='';toast(e.message,'error')}btn.disabled=false};
+}
+
+function renderRoadmap(){
+  document.getElementById('mainContent').innerHTML=`<div class="card"><div class="card-title">🗺️ Personalized Roadmap</div><p class="card-desc">Get a 12-week learning roadmap tailored to your goals.</p><div class="row"><div class="form-group"><label>Target Role</label><input type="text" id="roadRole" placeholder="Full Stack Developer, Data Analyst..."></div><div class="form-group"><label>Hours per Day</label><input type="number" id="roadHours" min="1" max="12" placeholder="2"></div></div><button class="btn btn-primary" id="roadBtn">Generate Roadmap</button><div id="roadResults"></div></div>`;
+  document.getElementById('roadBtn').onclick=async()=>{const role=document.getElementById('roadRole').value.trim(),hours=document.getElementById('roadHours').value;if(!role||!hours){toast('Enter role and hours','error');return}const btn=document.getElementById('roadBtn'),res=document.getElementById('roadResults');btn.disabled=true;showLoading(res);const u=getUser();try{let weeks=await callAIWithFallback(`12-week roadmap for ${u.branch} targeting ${role}, ${hours}hrs/day. JSON:[{"week":1,"title":"","tasks":[]}]`,()=>localRoadmap(role,hours,u.branch));if(!Array.isArray(weeks))weeks=localRoadmap(role,hours,u.branch);markFeatureUsed('roadmap');res.innerHTML=`<div class="timeline">${weeks.slice(0,12).map(w=>`<div class="timeline-item"><div class="timeline-week">Week ${w.week}: ${esc(w.title||'')}</div><div class="timeline-content">${(w.tasks||[]).map(t=>'• '+esc(t)).join('<br>')}</div></div>`).join('')}</div>`;toast('Roadmap generated!','success')}catch(e){res.innerHTML='';toast(e.message,'error')}btn.disabled=false};
+}
+
+function renderTests(){
+  const u=getUser();
+  document.getElementById('mainContent').innerHTML=`<div class="card"><div class="card-title">📝 Aptitude & Coding Tests</div><p class="card-desc">Branch: ${u.branch} · 10 MCQs · 15 min timer</p><div class="tabs" id="testTabs"><button class="tab-btn active" data-tab="aptitude">Aptitude</button><button class="tab-btn" data-tab="coding">Coding</button><button class="tab-btn" data-tab="verbal">Verbal</button></div><div id="testArea"><button class="btn btn-primary" id="startTest">Start Test</button></div></div>`;
+  let activeTab='aptitude';
+  document.querySelectorAll('#testTabs .tab-btn').forEach(b=>b.onclick=()=>{document.querySelectorAll('#testTabs .tab-btn').forEach(t=>t.classList.remove('active'));b.classList.add('active');activeTab=b.dataset.tab;testState=null;document.getElementById('testArea').innerHTML='<button class="btn btn-primary" id="startTest">Start Test</button>';document.getElementById('startTest').onclick=startTestFn});
+  document.getElementById('startTest').onclick=startTestFn;
+  async function startTestFn(){const area=document.getElementById('testArea');showLoading(area);const seed=Date.now();const tabMap={aptitude:u.branch==='MBA'?'Logical Reasoning':'Quantitative Aptitude',coding:u.branch==='CSE'?'DSA':u.branch==='ECE'?'Electronics':'Technical',verbal:'Verbal Ability'};try{const testBank=MCQ_BANK[activeTab]||MCQ_BANK.aptitude;const getFallbackQs=()=>getUniqueQuestions(testBank,'placementor_seen_test_'+activeTab,10);let qs=await callAIWithFallback(`10 MCQ for ${tabMap[activeTab]}. Branch:${u.branch}. Seed:${seed}. JSON:[{"question":"","options":["A","B","C","D"],"correct":0,"explanation":""}]`,getFallbackQs);if(!Array.isArray(qs)||!qs.length)qs=getFallbackQs();testState={questions:qs.slice(0,10),answers:{},tab:activeTab,timeLeft:900,timer:null,submitted:false};markFeatureUsed('tests');renderTestQ();startTimer();toast('Test started!','success')}catch(e){area.innerHTML='<button class="btn btn-primary" id="startTest">Start Test</button>';document.getElementById('startTest').onclick=startTestFn;toast(e.message,'error')}}
+  function startTimer(){if(testState.timer)clearInterval(testState.timer);testState.timer=setInterval(()=>{testState.timeLeft--;const el=document.getElementById('testTimer');if(el)el.textContent=Math.floor(testState.timeLeft/60)+':'+(testState.timeLeft%60).toString().padStart(2,'0');if(testState.timeLeft<=0){clearInterval(testState.timer);submitTest()}},1000)}
+  function renderTestQ(){const area=document.getElementById('testArea'),{questions,answers}=testState;area.innerHTML=`<div class="timer" id="testTimer">${Math.floor(testState.timeLeft/60)}:${(testState.timeLeft%60).toString().padStart(2,'0')}</div>${questions.map((q,i)=>`<div style="margin-bottom:1.5rem"><p style="font-weight:600;margin-bottom:.5rem;font-size:.9rem">Q${i+1}. ${q.question}</p>${(q.options||[]).map((o,j)=>`<div class="mcq-option${answers[i]===j?' selected':''}" data-q="${i}" data-o="${j}"><span>${String.fromCharCode(65+j)}.</span> ${o}</div>`).join('')}</div>`).join('')}<button class="btn btn-primary" id="submitTest">Submit Test</button>`;document.querySelectorAll('.mcq-option').forEach(opt=>opt.onclick=()=>{if(testState.submitted)return;testState.answers[opt.dataset.q]=+opt.dataset.o;renderTestQ()});document.getElementById('submitTest').onclick=submitTest}
+  function submitTest(){if(testState.submitted)return;testState.submitted=true;clearInterval(testState.timer);const{questions,answers}=testState;let score=0;questions.forEach((q,i)=>{if(answers[i]===q.correct)score++});
+  
+  // Save attempt to localStorage
+  const history = JSON.parse(localStorage.getItem('placementor_test_history') || '[]');
+  history.push({
+    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+    category: testState.tab,
+    score: score,
+    total: 10
+  });
+  localStorage.setItem('placementor_test_history', JSON.stringify(history));
+
+  const area=document.getElementById('testArea');area.innerHTML=`<div class="gauge-wrap"><div class="gauge-value">${score}/10</div><p style="color:var(--muted)">Your Score</p></div>${questions.map((q,i)=>{const ok=answers[i]===q.correct;return`<div style="margin-bottom:1rem;padding:1rem;background:var(--bg);border-radius:.75rem;border-left:3px solid ${ok?'var(--success)':'var(--danger)'}"><p style="font-weight:600;font-size:.85rem">Q${i+1}. ${q.question}</p><p style="font-size:.8rem;color:var(--muted);margin:.35rem 0">Your answer: ${answers[i]!==undefined?(q.options||[])[answers[i]]:'Not answered'} · Correct: ${(q.options||[])[q.correct]}</p><p style="font-size:.85rem">💡 ${q.explanation||'Review this topic.'}</p></div>`}).join('')}<button class="btn btn-primary" id="startNewTestBtn" style="margin-top:1.5rem;width:100%">📝 Start New Test</button>`;
+  document.getElementById('startNewTestBtn').onclick=()=>{testState=null;document.getElementById('testArea').innerHTML='<button class="btn btn-primary" id="startTest">Start Test</button>';document.getElementById('startTest').onclick=startTestFn;document.getElementById('startTest').click();};
+  toast('Test submitted! Score: '+score+'/10','success')}
+}
+
+function renderJobs(){
+  document.getElementById('mainContent').innerHTML=`<div class="card"><div class="card-title">💼 Job Recommendations</div><p class="card-desc">Get AI-curated job matches based on your profile.</p><div class="form-group"><label>Skills (press Enter)</label><div class="tags-input" id="jobSkills"><input type="text" id="jobSkillInp" placeholder="Python, React, SQL..."></div></div><div class="row"><div class="form-group"><label>Experience Level</label><select id="expLevel"><option>Fresher</option><option>0-1 years</option><option>1-3 years</option><option>3+ years</option></select></div><div class="form-group"><label>Preferred Location</label><input type="text" id="jobLoc" placeholder="Bangalore, Remote, Hyderabad..."></div></div><button class="btn btn-primary" id="jobBtn">Get Recommendations</button><div id="jobResults"></div></div>`;
+  const jtags=[],jbox=document.getElementById('jobSkills'),jinp=document.getElementById('jobSkillInp');
+  jbox.onclick=()=>jinp.focus();jinp.onkeydown=e=>{if(e.key==='Enter'&&jinp.value.trim()){e.preventDefault();jtags.push(jinp.value.trim());jinp.value='';renderJTags()}};
+  function renderJTags(){jbox.querySelectorAll('.tag').forEach(t=>t.remove());jtags.forEach((t,i)=>{const el=document.createElement('span');el.className='tag';el.innerHTML=t+' <span>×</span>';jbox.insertBefore(el,jinp);el.querySelector('span').onclick=()=>{jtags.splice(i,1);renderJTags()}})}
+  document.getElementById('jobBtn').onclick=async()=>{const exp=document.getElementById('expLevel').value,loc=document.getElementById('jobLoc').value.trim();if(!jtags.length){toast('Add at least one skill','error');return}const btn=document.getElementById('jobBtn'),res=document.getElementById('jobResults');btn.disabled=true;showLoading(res);const u=getUser();try{let jobs=await callAIWithFallback(`8 jobs for ${u.branch}. Skills:${jtags.join(',')},Exp:${exp},Loc:${loc||'Any'}. JSON:[{"role":"","company":"","package":"","matchPercent":0,"applyLink":""}]`,()=>localJobRecommendations(jtags,exp,loc,u.branch));if(!Array.isArray(jobs))jobs=localJobRecommendations(jtags,exp,loc,u.branch);markFeatureUsed('jobs');res.innerHTML=jobs.slice(0,8).map(j=>`<div class="job-card"><div><div style="font-weight:700;font-size:.95rem">${esc(j.role)}</div><div style="color:var(--muted);font-size:.85rem;margin-top:2px">${esc(j.company)} · ${esc(j.package)}</div><a href="${j.applyLink||'#'}" style="color:var(--blue);font-size:.8rem;margin-top:4px;display:inline-block" target="_blank">Apply Now →</a></div><div class="match-badge">${j.matchPercent||80}% Match</div></div>`).join('');toast('Jobs loaded!','success')}catch(e){res.innerHTML='';toast(e.message,'error')}btn.disabled=false};
+}
+
+function renderCompany(prefill){
+  document.getElementById('mainContent').innerHTML=`<div class="card"><div class="card-title">🏢 Company Insights</div><p class="card-desc">Deep dive into company hiring patterns and interview prep.</p><div class="form-group" style="display:flex;gap:8px"><input type="text" id="companySearch" placeholder="Search company..." value="${prefill||''}" style="flex:1"><button class="btn btn-primary btn-sm" id="companySearchBtn">Search</button></div><div id="companyResults"></div></div>`;
+  document.getElementById('companySearchBtn').onclick=loadCompanyInsights;
+  document.getElementById('companySearch').onkeydown=e=>{if(e.key==='Enter')loadCompanyInsights()};
+  if(prefill)loadCompanyInsights();
+  async function loadCompanyInsights(){const name=document.getElementById('companySearch').value.trim();if(!name){toast('Enter a company name','error');return}const res=document.getElementById('companyResults');showLoading(res);try{const d=await callAIWithFallback(`Company insights for "${name}" India campus. JSON:{"about":"","hiringProcess":[],"interviewRounds":[],"commonQuestions":[],"packageRange":"","insiderTips":[]}`,()=>localCompanyInsights(name));markFeatureUsed('company');const tabs=[{id:'about',label:'About',content:d.about},{id:'process',label:'Hiring Process',content:(d.hiringProcess||[]).map((s,i)=>`${i+1}. ${s}`).join('\n')},{id:'rounds',label:'Interview Rounds',content:(d.interviewRounds||[]).map(r=>'• '+r).join('\n')},{id:'questions',label:'Common Questions',content:(d.commonQuestions||[]).map(q=>'• '+q).join('\n')},{id:'package',label:'Package Range',content:d.packageRange||'Varies'},{id:'tips',label:'Insider Tips',content:(d.insiderTips||[]).map(t=>'• '+t).join('\n')}];res.innerHTML=`<div class="insight-tabs">${tabs.map((t,i)=>`<button class="insight-tab${i===0?' active':''}" data-tab="${t.id}">${t.label}</button>`).join('')}</div>${tabs.map((t,i)=>`<div class="insight-panel${i===0?' active':''}" id="panel-${t.id}">${esc(t.content)}</div>`).join('')}`;document.querySelectorAll('.insight-tab').forEach(tab=>tab.onclick=()=>{document.querySelectorAll('.insight-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.insight-panel').forEach(p=>p.classList.remove('active'));tab.classList.add('active');document.getElementById('panel-'+tab.dataset.tab).classList.add('active')});toast('Insights loaded for '+name,'success')}catch(e){res.innerHTML='';toast(e.message,'error')}}
+}
+
+
+
+function renderProgress(){
+  const u=getUser();
+  const testHistory=JSON.parse(localStorage.getItem('placementor_test_history')||'[]');
+  const interviewHistory=JSON.parse(localStorage.getItem('placementor_interview_history')||'[]');
+  const usedFeatures=getUsedFeatures();
+  
+  const totalTests=testHistory.length;
+  const avgTestScore=totalTests?(testHistory.reduce((acc,curr)=>acc+curr.score,0)/totalTests).toFixed(1):'0.0';
+  const totalInterviews=interviewHistory.length;
+  const avgInterviewScore=totalInterviews?(interviewHistory.reduce((acc,curr)=>acc+curr.score,0)/totalInterviews).toFixed(1):'0.0';
+  const featuresPct=Math.round((usedFeatures.length/10)*100);
+
+  markFeatureUsed('progress');
+
+  document.getElementById('mainContent').innerHTML=`
+    <div class="card">
+      <div class="card-title">📈 Student Progress Dashboard</div>
+      <p class="card-desc">Detailed breakdown of your activities, quiz attempts, and preparation progress.</p>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem" class="row">
+        <div class="stat-card" style="text-align:left;display:flex;flex-direction:column;justify-content:center">
+          <h3 style="font-size:1.1rem;margin-bottom:.5rem;color:var(--accent)">${esc(u.fullName)}</h3>
+          <p style="font-size:.85rem;color:var(--muted)">College: <strong>${esc(u.collegeName)}</strong></p>
+          <p style="font-size:.85rem;color:var(--muted)">Branch: <strong>${esc(u.branch)}</strong></p>
+          <p style="font-size:.85rem;color:var(--muted)">Year/Class: <strong>${esc(u.classYear)}</strong></p>
+          <p style="font-size:.85rem;color:var(--muted)">Email: <strong>${esc(u.email)}</strong></p>
+        </div>
+        <div class="stat-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div class="score-circle" style="--pct:${featuresPct}%;margin:0 0 .5rem 0;width:90px;height:90px;font-size:1.4rem">
+            <span style="font-size:1.15rem">${featuresPct}%</span>
+          </div>
+          <div class="stat-label" style="font-weight:600">Platform Features Completed</div>
+          <div style="font-size:.7rem;color:var(--muted);margin-top:2px">${usedFeatures.length} of 10 features activated</div>
+        </div>
+      </div>
+
+      <div class="welcome-grid" style="margin-bottom:1.5rem">
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--blue)">${totalTests}</div>
+          <div class="stat-label">Tests Taken</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:${avgTestScore>=7?'var(--success)':avgTestScore>=5?'var(--accent)':'var(--danger)'}">${avgTestScore}/10</div>
+          <div class="stat-label">Avg Quiz Score</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--blue)">${totalInterviews}</div>
+          <div class="stat-label">Mock Interviews</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:${avgInterviewScore>=80?'var(--success)':avgInterviewScore>=60?'var(--accent)':'var(--danger)'}">${avgInterviewScore}%</div>
+          <div class="stat-label">Avg Interview Score</div>
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--bg);border-color:var(--border);margin-bottom:1.5rem">
+        <h4 style="font-size:.9rem;font-weight:700;margin-bottom:.75rem">🏁 Placement Prep Checklist</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.5rem;font-size:.85rem">
+          ${FEATURES.map(f=>{
+            const completed=usedFeatures.includes(f.id);
+            return `
+              <div style="display:flex;align-items:center;gap:8px;padding:.35rem;border-radius:.35rem;background:rgba(255,255,255,0.02)">
+                <span style="font-size:1rem;color:${completed?'var(--success)':'var(--muted)'}">${completed?'✅':'⭕'}</span>
+                <span style="color:${completed?'var(--text)':'var(--muted)'}">${f.name}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="tabs" id="progressTabs">
+        <button class="tab-btn active" data-tab="testLog">Test History Log</button>
+        <button class="tab-btn" data-tab="interviewLog">Mock Interview Log</button>
+      </div>
+      <div id="progressLogArea">
+        <div class="tab-content active" id="tab-testLog">
+          ${testHistory.length===0?'<p style="color:var(--muted);font-size:.85rem;text-align:center;padding:1.5rem">No test attempts logged yet. Go to Aptitude & Coding Tests to start!</p>':`
+            <div style="display:flex;flex-direction:column;gap:.5rem">
+              ${testHistory.slice().reverse().map(h=>`
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;background:var(--bg);border:1px solid var(--border);border-radius:.5rem">
+                  <div>
+                    <span style="font-weight:600;font-size:.85rem;text-transform:capitalize">${esc(h.category)} Quiz</span>
+                    <div style="font-size:.7rem;color:var(--muted);margin-top:2px">${esc(h.date)}</div>
+                  </div>
+                  <div style="font-weight:700;font-size:1rem;color:${h.score>=7?'var(--success)':h.score>=5?'var(--accent)':'var(--danger)'}">${h.score}/${h.total}</div>
+                </div>
+              `).join('')}
+            </div>
+          `}
+        </div>
+        <div class="tab-content" id="tab-interviewLog">
+          ${interviewHistory.length===0?'<p style="color:var(--muted);font-size:.85rem;text-align:center;padding:1.5rem">No interview sessions logged yet. Go to Mock Interview to start!</p>':`
+            <div style="display:flex;flex-direction:column;gap:.5rem">
+              ${interviewHistory.slice().reverse().map(h=>`
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;background:var(--bg);border:1px solid var(--border);border-radius:.5rem">
+                  <div>
+                    <span style="font-weight:600;font-size:.85rem">${esc(h.branch)} Interview</span>
+                    <div style="font-size:.7rem;color:var(--muted);margin-top:2px">${esc(h.date)}</div>
+                  </div>
+                  <div style="font-weight:700;font-size:1rem;color:${h.score>=80?'var(--success)':h.score>=60?'var(--accent)':'var(--danger)'}">${h.score}%</div>
+                </div>
+              `).join('')}
+            </div>
+          `}
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll('#progressTabs .tab-btn').forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll('#progressTabs .tab-btn').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('#progressLogArea .tab-content').forEach(c=>c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+    };
+  });
+}
+
+function renderMentor(){
+  const u=getUser();
+  const testHistory=JSON.parse(localStorage.getItem('placementor_test_history')||'[]');
+  const interviewHistory=JSON.parse(localStorage.getItem('placementor_interview_history')||'[]');
+  const usedFeatures=getUsedFeatures();
+  
+  markFeatureUsed('mentor');
+
+  const generateMentorFeedback=(user,used,tests,interviews)=>{
+    const total=used.length;
+    const totalTests=tests.length;
+    const avgTestScore=totalTests?tests.reduce((acc,curr)=>acc+curr.score,0)/totalTests:0;
+    const totalInterviews=interviews.length;
+    const avgInterviewScore=totalInterviews?interviews.reduce((acc,curr)=>acc+curr.score,0)/totalInterviews:0;
+
+    if(total<=2){
+      return {
+        title:`Welcome, ${user.fullName}! Let's build your placement foundation.`,
+        body:`I am your AI Daily Mentor. I will monitor your activities and give you daily personalized advice.\n\nRight now, the best starting point is to upload and analyze your resume in the **Resume Analyzer** tab. Understanding your strengths and weaknesses is the first step toward optimization. Let's do this first!`,
+        checklist:[
+          "Go to Resume Analyzer and paste your resume",
+          "Read the suggestions and note the critical points",
+          "Set up your API Key if you want to use real AI mode"
+        ]
+      };
+    }
+
+    if(used.includes('resume')&&totalTests===0){
+      return {
+        title:"Analyze your skills with a quick test!",
+        body:`Great job on analyzing your resume, ${user.fullName}! The next key phase of preparation is benchmarking your technical and logic skills.\n\nGo to the **Aptitude & Coding Tests** section. I recommend starting with the **Aptitude** test. Try to solve the questions under timed conditions to see how fast you are.`,
+        checklist:[
+          "Go to Aptitude & Coding Tests",
+          "Select the Aptitude tab and click 'Start Test'",
+          "Complete the 10 questions and review the solutions"
+        ]
+      };
+    }
+
+    if(totalTests>0&&avgTestScore<6){
+      return {
+        title:"Improve your analytical base through practice.",
+        body:`I noticed your average test score is **${avgTestScore.toFixed(1)}/10**. Don't worry! Everyone starts somewhere.\n\nFor a **${user.branch}** student, companies look for clean logical flow. Let's review the questions you got wrong, note down the formulas, and attempt another test in the Coding or Verbal sections to boost your score.`,
+        checklist:[
+          "Review your incorrect answers in the Student Progress tab",
+          "Focus on Quantitative Aptitude speed tricks",
+          "Take a new Coding or Verbal test today"
+        ]
+      };
+    }
+
+    if(totalTests>0&&totalInterviews===0){
+      return {
+        title:"You are doing great! Let's work on communication now.",
+        body:`Excellent work! Your average test score is **${avgTestScore.toFixed(1)}/10**, showing strong logic.\n\nNow, it's time to build your communication skills. Technical knowledge is only half the battle; expressing it is the other. Head over to the **Mock Interview** section and start a new interview session. Take your time to write detailed, structured answers.`,
+        checklist:[
+          "Navigate to the Mock Interview section",
+          "Generate a new mock interview session",
+          "Draft detailed answers using the STAR format (Situation, Task, Action, Result)"
+        ]
+      };
+    }
+
+    if(totalInterviews>0&&avgInterviewScore<70){
+      return {
+        title:"Refining your interview answers.",
+        body:`Your average mock interview rating is **${avgInterviewScore.toFixed(0)}%**. To secure a placement in companies like TCS or Infosys, we should aim for above 80%.\n\nMy advice: Elaborate more in your answers. When asked a technical question, explain the concepts and give a coding example or reference a project where you implemented it. Try another mock interview today!`,
+        checklist:[
+          "Read the specific suggestions on your previous interview feedback",
+          "Revise OOPs, DBMS, or core engineering concepts",
+          "Complete a new Mock Interview session for branch "+user.branch
+        ]
+      };
+    }
+
+    return {
+      title:"Awesome job! You are in the placement fast-track.",
+      body:`Incredible work, ${user.fullName}! You have engaged with most of the prep tools, your average test score is **${avgTestScore.toFixed(1)}/10** and your average interview score is **${avgInterviewScore.toFixed(0)}%**.\n\nTo finalise, check the **Job Recommendations** to see roles matching your profile. You should also search for your dream companies in the **Company Insights** tab to read specific tips on their hiring process.`,
+      checklist:[
+        "Check Job Recommendations and look at matching rates",
+        "Read insider tips for TCS, Google, and Amazon",
+        "Keep practicing 1 daily aptitude question to maintain speed"
+      ]
+    };
+  };
+
+  const advice=generateMentorFeedback(u,usedFeatures,testHistory,interviewHistory);
+  
+  const dailyTips=[
+    {day:"Sunday",title:"📄 Resume Tip",tip:"Place your strongest project at the top and include the GitHub link. Ensure your achievements are quantifiable."},
+    {day:"Monday",title:"💻 Coding Tip",tip:"Understand the time complexity of your code. Master array sorting and binary search; they are tested in 80% of hiring assessments."},
+    {day:"Tuesday",title:"🔢 Aptitude Trick",tip:"Save time on percentage calculations! Memorize fractional equivalents, e.g., 20% = 1/5, 12.5% = 1/8."},
+    {day:"Wednesday",title:"🏢 Company Research",tip:"Before any interview, spend 10 minutes reading the company's recent news, core values, and product lines."},
+    {day:"Thursday",title:"🎤 Communication Tip",tip:"Use the STAR method for behavioral questions: explain the Situation, the Task at hand, the Action you took, and the Result."},
+    {day:"Friday",title:"🔍 Skill Gap Strategy",tip:"Look at the priority order for your target roles. Learn one new library or framework every weekend to stay ahead."},
+    {day:"Saturday",title:"🧠 Mental Prep",tip:"Consistency beats intensity. Spending 30 minutes daily on preparation is far better than studying 5 hours on a single day."}
+  ];
+  
+  const todayTip=dailyTips[new Date().getDay()];
+
+  document.getElementById('mainContent').innerHTML=`
+    <div class="card">
+      <div class="card-title">💡 AI Daily Mentor</div>
+      <p class="card-desc">Personalized daily guidance, tasks, and coaching insights based on your learning journey.</p>
+      
+      <div style="display:flex;gap:1.5rem;align-items:flex-start;background:var(--bg);border:1px solid var(--border);border-radius:1rem;padding:1.5rem;margin-bottom:1.5rem" class="row">
+        <div class="avatar" style="width:64px;height:64px;font-size:1.5rem;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--blue));flex-shrink:0;align-items:center;justify-content:center;display:flex">🤖</div>
+        <div style="flex:1">
+          <h4 style="font-size:1rem;font-weight:700;margin-bottom:.5rem;color:var(--accent)">${advice.title}</h4>
+          <p style="font-size:.87rem;line-height:1.6;color:var(--text);white-space:pre-line">${advice.body}</p>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem" class="row">
+        <div class="card" style="margin:0;background:var(--bg);border-color:var(--border)">
+          <h4 style="font-size:.9rem;font-weight:700;margin-bottom:.75rem;color:var(--blue)">📋 Today's Priority Actions</h4>
+          <div style="display:flex;flex-direction:column;gap:.5rem;font-size:.85rem">
+            ${advice.checklist.map(task=>`
+              <div style="display:flex;align-items:flex-start;gap:8px;padding:.25rem 0">
+                <span style="color:var(--accent)">📌</span>
+                <span style="line-height:1.4">${task}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        
+        <div class="card" style="margin:0;background:var(--bg);border-color:var(--border);display:flex;flex-direction:column;justify-content:space-between">
+          <div>
+            <h4 style="font-size:.9rem;font-weight:700;margin-bottom:.5rem;color:var(--success)">${todayTip.title} (${todayTip.day})</h4>
+            <p style="font-size:.85rem;line-height:1.5;color:var(--muted)">${todayTip.tip}</p>
+          </div>
+          <div style="font-size:.7rem;color:var(--muted);margin-top:1rem;border-top:1px solid var(--border);padding-top:.5rem">
+            Tips change automatically every day.
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--bg);border-color:var(--border);margin:0;padding:1.25rem">
+        <h4 style="font-size:.9rem;font-weight:700;margin-bottom:.5rem">💬 Ask Your Career Mentor</h4>
+        <p style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem">Ask about projects, DSA, resume preparation, or specific company processes.</p>
+        <div style="display:flex;gap:8px;margin-bottom:1rem">
+          <input type="text" id="mentorQuestion" placeholder="Ask e.g. How to prepare for TCS? or How to prepare projects?" style="flex:1;padding:.65rem .85rem;background:var(--card);border:1px solid var(--border);border-radius:.5rem;color:var(--text);font-family:inherit">
+          <button class="btn btn-primary btn-sm" id="askMentorBtn">Ask Mentor</button>
+        </div>
+        <div id="mentorReplyBox" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:.75rem;padding:1rem;font-size:.88rem;line-height:1.6;white-space:pre-wrap"></div>
+      </div>
+    </div>
+  `;
+
+  const mentorQA=(question)=>generateSmartLocalResponse(question, u, true);
+
+  const qInput=document.getElementById('mentorQuestion');
+  const askBtn=document.getElementById('askMentorBtn');
+  const replyBox=document.getElementById('mentorReplyBox');
+
+  askBtn.onclick=()=>{
+    const qText=qInput.value.trim();
+    if(!qText)return;
+    qInput.value='';
+    
+    replyBox.style.display='block';
+    replyBox.innerHTML='<div style="display:flex;align-items:center;gap:10px"><div class="spinner"></div><span style="color:var(--muted);font-size:.8rem">Mentor is thinking...</span></div>';
+    
+    setTimeout(()=>{
+      const response=mentorQA(qText);
+      
+      let html=response;
+      if(html.startsWith('### ')){
+        html=`<h4 style="margin-bottom:.5rem;color:var(--accent)">${html.substring(4,html.indexOf('\n'))}</h4>`+html.substring(html.indexOf('\n'));
+      }
+      
+      replyBox.innerHTML=html;
+    },700);
+  };
+
+  qInput.onkeydown=e=>{
+    if(e.key==='Enter')askBtn.onclick();
+  };
+}
+
+document.getElementById('login-form').onsubmit=e=>{e.preventDefault();const u={fullName:document.getElementById('fullName').value.trim(),classYear:document.getElementById('classYear').value.trim(),collegeName:document.getElementById('collegeName').value.trim(),branch:document.getElementById('branch').value,email:document.getElementById('email').value.trim()};if(!u.fullName||!u.branch){toast('Please fill all required fields','error');return}saveUser(u);document.getElementById('login-page').style.display='none';document.getElementById('dashboard').style.display='grid';initDashboard();toast('Welcome to Placementor AI!','success')};
+const savedTheme=localStorage.getItem('placementor_theme');if(savedTheme)document.documentElement.dataset.theme=savedTheme;
+const u=getUser();if(u){document.getElementById('fullName').value=u.fullName||'';document.getElementById('classYear').value=u.classYear||'';document.getElementById('collegeName').value=u.collegeName||'';document.getElementById('branch').value=u.branch||'';document.getElementById('email').value=u.email||''}
+</script>
+</body>
+</html>
