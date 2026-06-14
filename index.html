@@ -988,7 +988,7 @@ async function callAIText(prompt,localFn,system,history){
 
 function openApiKeyModal(){showApiKeyModal()}
 function setupApiKeyHandlers(){
-  document.getElementById('saveApiKeyBtn').onclick=async()=>{
+  document.getElementById('saveApiKeyBtn').onclick=()=>{
     const key=document.getElementById('modalApiKey').value.trim();
     if(!key||!key.startsWith('sk-')){toast('Enter valid API key (sk-ant-...)','error');return}
     saveApiKey(key);sessionStorage.setItem('api_modal_seen','1');hideApiKeyModal();
